@@ -10,6 +10,7 @@ import 'package:animage/feature/downloader/download_state.dart';
 import 'package:animage/feature/downloader/post_download_state.dart';
 import 'package:animage/feature/post_detail/post_detail_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_state.dart';
+import 'package:animage/shared/widgets/dialog.dart';
 import 'package:animage/shared/widgets/favorite_checkbox.dart';
 import 'package:animage/shared/widgets/gallery_list_item.dart';
 import 'package:animage/shared/widgets/list_loading_footer.dart';
@@ -388,7 +389,16 @@ class _TopInfoSection extends StatelessWidget {
         final postDownloadState =
             downloadState.postDownloadingStatus[state.post.id];
         if (postDownloadState is PermissionNotGrantedState) {
-          unawaited(openAppSettings());
+          showYesNoDialog(
+            context,
+            title: 'Permission needed',
+            message:
+                'To download the image, you must grant the access to images and video.'
+                '\nPlease update the permission in Settings page',
+            actionYes: () {
+              unawaited(openAppSettings());
+            },
+          );
         } else if (postDownloadState is DownloadFinishedState) {
           final resultText = postDownloadState.savedResult.isSuccess
               ? 'Downloaded post ${state.post.id}'

@@ -18,6 +18,7 @@ const Color black100 = Color.fromARGB(100, 0, 0, 0);
 const grey217 = Color.fromRGBO(217, 217, 217, 1.0);
 const grey189 = Color.fromARGB(255, 189, 189, 189);
 const grey87 = Color.fromARGB(255, 87, 87, 87);
+const grey33 = Color.fromARGB(255, 33, 33, 33);
 const grey117 = Color.fromARGB(255, 117, 117, 117);
 
 const Color defaultTransparentGrey = Color.fromARGB(100, 0, 0, 0);
