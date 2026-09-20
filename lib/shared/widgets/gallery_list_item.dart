@@ -1,10 +1,14 @@
 import 'dart:io';
 
 import 'package:animage/constant.dart';
+import 'package:animage/dimension.dart';
 import 'package:animage/domain/entity/post.dart';
+import 'package:animage/feature/post_additional_info/post_additional_info.dart';
+import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../extension/context_extension.dart';
 import 'favorite_checkbox.dart';
@@ -37,7 +41,7 @@ class _GalleryListItemState extends State<GalleryListItem> {
     return GestureDetector(
       onTap: widget.onSelect,
       child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+        borderRadius: const BorderRadius.all(Radius.circular(space2)),
         child: AspectRatio(
           aspectRatio: widget.itemAspectRatio,
           child: Container(
@@ -59,8 +63,8 @@ class _GalleryListItemState extends State<GalleryListItem> {
                 Container(
                   constraints: const BoxConstraints.expand(height: 80),
                   padding: const EdgeInsets.symmetric(
-                    vertical: 8.0,
-                    horizontal: 16.0,
+                    vertical: space1,
+                    horizontal: space2,
                   ),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
@@ -83,23 +87,13 @@ class _GalleryListItemState extends State<GalleryListItem> {
                               overflow: TextOverflow.ellipsis,
                               style: _authorTextStyle(context),
                             ),
-                            /*Visibility(
-                              visible: artistUiModel != null,
-                              child: Text(
-                                artistUiModel?.name ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: textTheme.headlineMedium?.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),*/
+                            _ArtistInfo(data),
                           ],
                         ),
                       ),
                       FavoriteCheckbox(
                         key: ValueKey(DateTime.now()),
-                        size: 28,
+                        size: space3,
                         color: brandColor,
                         isFavorite: false,
                         onFavoriteChanged: (_) {},
@@ -116,9 +110,40 @@ class _GalleryListItemState extends State<GalleryListItem> {
   }
 }
 
+class _ArtistInfo extends StatelessWidget {
+  const _ArtistInfo(this.post);
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PostAdditionalInfoCubit, PostAdditionalInfo>(
+      builder: (context, additionalInfo) {
+        final artist = additionalInfo.artistOfPost[post.id];
+        return Visibility(
+          visible: artist != null,
+          child: Text(
+            artist?.name ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: _artistTextStyle(context),
+          ),
+        );
+      },
+    );
+  }
+}
+
 TextStyle? _authorTextStyle(BuildContext context) {
   return (Platform.isIOS
           ? CupertinoTheme.of(context).textTheme.textStyle
           : Theme.of(context).textTheme.bodyLarge)
+      ?.copyWith(color: white);
+}
+
+TextStyle? _artistTextStyle(BuildContext context) {
+  return (Platform.isIOS
+          ? CupertinoTheme.of(context).textTheme.navTitleTextStyle
+          : Theme.of(context).textTheme.headlineMedium)
       ?.copyWith(color: white);
 }

@@ -3,7 +3,7 @@ import 'package:animage/feature/downloader/post_download_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 
-import '../../shared/file_helper.dart';
+import '../../shared/helper/file_helper.dart';
 import '../../utils/log.dart';
 import 'download_state.dart';
 

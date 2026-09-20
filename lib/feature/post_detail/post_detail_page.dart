@@ -5,15 +5,18 @@ import 'dart:ui';
 
 import 'package:animage/constant.dart';
 import 'package:animage/dimension.dart';
+import 'package:animage/domain/entity/artist.dart';
 import 'package:animage/feature/downloader/download_cubit.dart';
 import 'package:animage/feature/downloader/download_state.dart';
 import 'package:animage/feature/downloader/post_download_state.dart';
+import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_state.dart';
 import 'package:animage/shared/widgets/dialog.dart';
 import 'package:animage/shared/widgets/favorite_checkbox.dart';
 import 'package:animage/shared/widgets/gallery_list_item.dart';
 import 'package:animage/shared/widgets/list_loading_footer.dart';
+import 'package:animage/shared/widgets/url_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +60,7 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final post = state.post;
+    final postAdditionalInfo = context.watch<PostAdditionalInfoCubit>().state;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -81,6 +85,7 @@ class _Body extends StatelessWidget {
                 )
               : coverMaxHeight;
 
+          final artist = postAdditionalInfo.artistOfPost[post.id];
           return Stack(
             children: [
               CustomScrollView(
@@ -105,31 +110,18 @@ class _Body extends StatelessWidget {
                           ),
                         ),
 
-                        _CoverFooter(post: post),
+                        _CoverFooter(post: state.post, artist: artist),
                       ],
                     ),
                   ),
 
                   SliverToBoxAdapter(child: SizedBox(height: spaceOneHalf)),
 
-                  // Post ID
+                  // Top info
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: space1),
                       child: _TopInfoSection(state),
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(child: SizedBox(height: spaceOneHalf)),
-
-                  // Post ID
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: space1),
-                      child: Text(
-                        post.postId,
-                        style: _tagTitleTextStyle(context),
-                      ),
                     ),
                   ),
 
@@ -238,6 +230,33 @@ class _Body extends StatelessWidget {
                     ),
                   ),
 
+                  // Artist info
+                  if (artist != null) ...[
+                    SliverToBoxAdapter(child: SizedBox(height: spaceOneHalf)),
+
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: space1),
+                        child: Wrap(
+                          spacing: spaceHalf,
+                          runSpacing: spaceHalf,
+                          children: [
+                            Text(
+                              'Artist info:',
+                              style: _tagTitleTextStyle(context),
+                            ),
+
+                            for (final url in artist.urls)
+                              UrlText(
+                                url: url,
+                                textStyle: _tagTitleTextStyle(context),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
                   if (state.children.isNotEmpty) ...[
                     SliverToBoxAdapter(child: SizedBox(height: spaceOneHalf)),
 
@@ -329,9 +348,10 @@ class _Body extends StatelessWidget {
 }
 
 class _CoverFooter extends StatelessWidget {
-  const _CoverFooter({required this.post});
+  const _CoverFooter({required this.post, this.artist});
 
   final Post post;
+  final Artist? artist;
 
   @override
   Widget build(BuildContext context) {
@@ -351,7 +371,7 @@ class _CoverFooter extends StatelessWidget {
                   spacing: spaceHalf,
                   children: [
                     Text(
-                      "Author: ${post.author ?? "Unknown"}",
+                      "Artist: ${artist?.name ?? "Unknown"}",
                       style: _coverFooterTextStyle(context)
                           ?.copyWith(color: brandColor),
                     ),
@@ -422,6 +442,12 @@ class _TopInfoSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           spacing: space1,
           children: [
+            Expanded(
+              child: Text(
+                'Post #${state.post.id}',
+                style: _postIdTextStyle(context),
+              ),
+            ),
             if (isDownloading)
               _downloadingIndicator()
             else
@@ -475,4 +501,10 @@ TextStyle? _tagTitleTextStyle(BuildContext context) {
   return (Platform.isIOS
       ? CupertinoTheme.of(context).textTheme.textStyle
       : Theme.of(context).textTheme.bodyLarge);
+}
+
+TextStyle? _postIdTextStyle(BuildContext context) {
+  return (Platform.isIOS
+      ? CupertinoTheme.of(context).textTheme.navTitleTextStyle
+      : Theme.of(context).textTheme.headlineSmall);
 }

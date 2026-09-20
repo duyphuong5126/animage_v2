@@ -1,14 +1,18 @@
 import 'package:animage/constant.dart';
+import 'package:animage/data/repository/artist_repository.dart';
 import 'package:animage/feature/downloader/download_cubit.dart';
-import 'package:animage/feature/gallery/gallery_page.dart';
 import 'package:animage/feature/home/home_page.dart';
 import 'package:animage/feature/photo_viewer/photo_view_page.dart';
+import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await ArtistRepository.instance.loadArtists();
   runApp(const AnimageAndroidApp());
 }
 
@@ -18,8 +22,11 @@ class AnimageAndroidApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
-    return BlocProvider(
-      create: (context) => DownloadCubit(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => DownloadCubit()),
+        BlocProvider(create: (context) => PostAdditionalInfoCubit()),
+      ],
       child: MaterialApp(
         theme: ThemeData(
           useMaterial3: true,

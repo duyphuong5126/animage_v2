@@ -12,10 +12,10 @@ class PostDetailCubit extends Cubit<PostDetailState> {
   final PostRemoteDataSource _remoteDataSource = PostRemoteDataSourceImpl();
 
   void init() {
-    unawaited(_loadChildren());
+    unawaited(_loadPostDetails());
   }
 
-  Future<void> _loadChildren() async {
+  Future<void> _loadPostDetails() async {
     if (state.post.hasChildren != true) {
       return;
     }

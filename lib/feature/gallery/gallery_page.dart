@@ -8,6 +8,8 @@ import 'package:animage/domain/entity/post.dart';
 import 'package:animage/feature/gallery/gallery_cubit.dart';
 import 'package:animage/feature/gallery/state/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
+import 'package:animage/feature/gallery/state/page_state.dart';
+import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:animage/shared/widgets/gallery_list_item.dart';
 import 'package:animage/shared/widgets/gallery_mode_switch.dart';
 import 'package:animage/shared/widgets/list_loading_footer.dart';
@@ -26,12 +28,20 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends State<GalleryPage> {
+  Future<void> _processPageData(Iterable<PageData> pages) async {
+    final List<Post> posts = [for (final page in pages) ...page.data];
+    context.read<PostAdditionalInfoCubit>().processPosts(posts);
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     return BlocProvider(
       create: (context) => GalleryCubit()..init(),
-      child: BlocBuilder<GalleryCubit, GalleryState>(
+      child: BlocConsumer<GalleryCubit, GalleryState>(
+        listener: (context, state) {
+          unawaited(_processPageData(state.pages.values.whereType<PageData>()));
+        },
         builder: (context, state) {
           final hasTag =
               state.tags.isNotEmpty || state.galleryLevel != GalleryLevel.safe;

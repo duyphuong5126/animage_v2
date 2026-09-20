@@ -7,9 +7,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 
-import '../domain/entity/post.dart';
-import '../feature/downloader/post_download_state.dart';
-import '../utils/log.dart';
+import '../../domain/entity/post.dart';
+import '../../feature/downloader/post_download_state.dart';
+import '../../utils/log.dart';
 
 enum MediaType { image, video, audio }
 
