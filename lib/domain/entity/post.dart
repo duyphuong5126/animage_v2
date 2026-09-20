@@ -82,7 +82,7 @@ extension PostEntityExtension on Post {
   }
 
   String get shareUrl {
-    return '$postShareUrl/$id';
+    return '$postShareUrl/${this.id}';
   }
 
   String get postId => "Post #${this.id}";

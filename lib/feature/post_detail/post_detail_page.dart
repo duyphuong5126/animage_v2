@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../domain/entity/post.dart';
 import '../../shared/data/tag_selection.dart';
@@ -452,12 +453,19 @@ class _TopInfoSection extends StatelessWidget {
               _downloadingIndicator()
             else
               _downloadButton(context),
-            Platform.isIOS
-                ? CupertinoButton(
-                    child: Icon(CupertinoIcons.share),
-                    onPressed: () {},
-                  )
-                : IconButton(onPressed: () {}, icon: Icon(Icons.share)),
+            Builder(
+              builder: (shareContext) {
+                return Platform.isIOS
+                    ? CupertinoButton(
+                        child: Icon(CupertinoIcons.share),
+                        onPressed: () => _share(shareContext),
+                      )
+                    : IconButton(
+                        onPressed: () => _share(shareContext),
+                        icon: Icon(Icons.share),
+                      );
+              },
+            ),
           ],
         );
       },
@@ -488,6 +496,20 @@ class _TopInfoSection extends StatelessWidget {
             height: space3,
             child: CircularProgressIndicator(color: brandColor),
           );
+  }
+
+  void _share(BuildContext context) {
+    final post = state.post;
+    final box = context.findRenderObject() as RenderBox?;
+    unawaited(
+      SharePlus.instance.share(
+        ShareParams(
+          title: 'Post #${post.id}',
+          uri: Uri.parse(post.shareUrl),
+          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+        ),
+      ),
+    );
   }
 }
 
