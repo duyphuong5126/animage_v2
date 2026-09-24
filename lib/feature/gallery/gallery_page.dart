@@ -10,6 +10,7 @@ import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
 import 'package:animage/feature/gallery/state/page_state.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
+import 'package:animage/shared/widgets/empty_page_content.dart';
 import 'package:animage/shared/widgets/gallery_list_item.dart';
 import 'package:animage/shared/widgets/gallery_mode_switch.dart';
 import 'package:animage/shared/widgets/list_loading_footer.dart';
@@ -19,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../shared/data/tag_selection.dart';
+import '../../utils/log.dart';
 
 class GalleryPage extends StatelessWidget {
   const GalleryPage({super.key});
@@ -48,10 +50,28 @@ class GalleryPage extends StatelessWidget {
         builder: (context, state) {
           final hasTag =
               state.tags.isNotEmpty || state.galleryLevel != GalleryLevel.safe;
+
+          final hasError = state.pages.values.any((page) => page is PageError);
+          logD('hasError=$hasError');
           final body = Stack(
             alignment: Alignment.topRight,
             children: [
-              _InfinityGallery(state),
+              state.data.isNotEmpty || state.loading
+                  ? _InfinityGallery(state)
+                  : EmptyPageContent(
+                      title: hasError ? 'Error occurred' : 'Empty Gallery',
+                      message: hasError
+                          ? 'Please try again.'
+                          : 'No content matches you search.',
+                      actionData: hasError
+                          ? EmptyContentAction(
+                              label: 'Retry',
+                              action: () {
+                                context.read<GalleryCubit>().retry();
+                              },
+                            )
+                          : null,
+                    ),
               Container(
                 color: hasTag
                     ? isDark

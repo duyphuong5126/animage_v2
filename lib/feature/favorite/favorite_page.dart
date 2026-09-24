@@ -5,9 +5,11 @@ import 'package:animage/feature/favorite/favorite_cubit.dart';
 import 'package:animage/feature/favorite/favorite_state.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
+import 'package:animage/shared/widgets/empty_page_content.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import '../../constant.dart';
 import '../../dimension.dart';
@@ -17,6 +19,8 @@ import '../../shared/enum/gallery_mode.dart';
 import '../../shared/widgets/gallery_list_item.dart';
 import '../../shared/widgets/gallery_mode_switch.dart';
 import '../../shared/widgets/list_loading_footer.dart';
+
+final _favoriteCountFormat = NumberFormat.decimalPattern();
 
 class FavoritePage extends StatelessWidget {
   const FavoritePage({super.key});
@@ -34,10 +38,26 @@ class FavoritePage extends StatelessWidget {
         },
         child: BlocBuilder<FavoriteCubit, FavoriteState>(
           builder: (context, state) {
+            final hasError = state.error != null;
             final body = Stack(
               alignment: Alignment.topRight,
               children: [
-                _InfinityGallery(state),
+                state.posts.isNotEmpty
+                    ? _InfinityGallery(state)
+                    : EmptyPageContent(
+                        title: hasError ? 'Error occurred' : 'No Favorite',
+                        message: hasError
+                            ? 'Please try again.'
+                            : 'You can add some on the main gallery',
+                        actionData: hasError
+                            ? EmptyContentAction(
+                                label: 'Retry',
+                                action: () {
+                                  context.read<FavoriteCubit>().reset();
+                                },
+                              )
+                            : null,
+                      ),
                 Padding(
                   padding: EdgeInsetsGeometry.symmetric(
                     vertical: spaceHalf,
@@ -53,7 +73,9 @@ class FavoritePage extends StatelessWidget {
               ],
             );
 
-            final title = Text('Favorites (${state.favoriteCount})');
+            final title = Text(
+              'Favorites (${_favoriteCountFormat.format(state.favoriteCount)})',
+            );
             return Platform.isIOS
                 ? CupertinoPageScaffold(
                     navigationBar: CupertinoNavigationBar(middle: title),

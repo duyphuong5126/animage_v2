@@ -196,13 +196,20 @@ class _InfoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: textTheme.bodyLarge),
+        Text(
+          title,
+          style: textTheme.bodyLarge?.copyWith(color: isDark ? grey33 : black),
+        ),
         const SizedBox(height: spaceQuarter),
-        Text(description, style: textTheme.bodyMedium),
+        Text(
+          description,
+          style: textTheme.bodyMedium?.copyWith(color: isDark ? grey33 : black),
+        ),
         const SizedBox(height: spaceQuarter),
       ],
     );
@@ -222,6 +229,7 @@ class _ExternalInfoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     final textTheme = Theme.of(context).textTheme;
     return InkWell(
       onTap: onTap,
@@ -231,9 +239,19 @@ class _ExternalInfoItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: textTheme.bodyLarge),
+                Text(
+                  title,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: isDark ? grey33 : black,
+                  ),
+                ),
                 const SizedBox(height: spaceQuarter),
-                Text(description, style: textTheme.labelSmall),
+                Text(
+                  description,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: isDark ? grey33 : black,
+                  ),
+                ),
                 const SizedBox(height: spaceQuarter),
               ],
             ),

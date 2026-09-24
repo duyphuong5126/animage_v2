@@ -31,6 +31,7 @@ class FavoriteCubit extends Cubit<FavoriteState> {
 
     final currentPosts = [...state.posts];
     bool hasMoreData = true;
+    Object? error;
     try {
       final postList = await _localDataSource.getFavoriteList(
         currentPosts.length,
@@ -39,6 +40,7 @@ class FavoriteCubit extends Cubit<FavoriteState> {
       currentPosts.addAll(postList);
       hasMoreData = currentPosts.length < state.favoriteCount;
     } catch (e) {
+      error = e;
       hasMoreData = false;
     }
     emit(
@@ -46,6 +48,7 @@ class FavoriteCubit extends Cubit<FavoriteState> {
         posts: currentPosts,
         loading: false,
         hasMoreData: hasMoreData,
+        error: error,
       ),
     );
   }
@@ -61,6 +64,7 @@ class FavoriteCubit extends Cubit<FavoriteState> {
         posts: [],
         loading: false,
         hasMoreData: false,
+        error: null,
       ),
     );
     unawaited(_init());

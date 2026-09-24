@@ -35,7 +35,6 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   @override
   Future<List<Post>> getPostList(int page, GalleryLevel galleryLevel) async {
     String url = '${_getBasePostUrl(galleryLevel)}&${ApiConstant.page}=$page';
-    Future<List<Post>> result;
     try {
       Response response = await get(Uri.parse(url))
           .timeout(const Duration(seconds: requestTimeOut));
@@ -44,15 +43,14 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
         tag,
         '\n-------------------\nGET $url\nResult: ${response.statusCode} - ${postList.posts.map((e) => e.id)}\n-------------------',
       );
-      result = Future.value(postList.posts);
+      return postList.posts;
     } catch (e) {
       Log.d(
         tag,
         '\n-------------------\nGET $url\nError: $e\n-------------------',
       );
-      result = Future.value([]);
+      rethrow;
     }
-    return result;
   }
 
   @override
@@ -73,7 +71,6 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
 
     String url =
         '${_getBasePostUrl(galleryLevel)}${galleryLevel == GalleryLevel.free ? '&${ApiConstant.tags}=' : '+'}$normalizedTags&${ApiConstant.page}=$page';
-    Future<List<Post>> result;
     try {
       Response response = await get(Uri.parse(url))
           .timeout(const Duration(seconds: requestTimeOut));
@@ -85,14 +82,13 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
         tag,
         '\n-------------------\nGET $url\nResult: ${response.statusCode} - ${postList.posts.map((e) => e.id)}\n-------------------',
       );
-      result = Future.value(postList.posts);
+      return postList.posts;
     } catch (e) {
       Log.d(
         tag,
         '\n-------------------\nGET $url\nError: $e\n-------------------',
       );
-      result = Future.value([]);
+      rethrow;
     }
-    return result;
   }
 }

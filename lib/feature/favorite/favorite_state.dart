@@ -13,5 +13,6 @@ abstract class FavoriteState with _$FavoriteState {
     @Default(false) bool loading,
     @Default(false) bool hasMoreData,
     @Default(GalleryMode.list) GalleryMode galleryMode,
+    @Default(null) Object? error,
   }) = _FavoriteState;
 }
