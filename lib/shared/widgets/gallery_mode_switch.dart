@@ -2,7 +2,7 @@ import 'package:animage/constant.dart';
 import 'package:flutter/material.dart';
 
 import '../../dimension.dart';
-import '../../feature/gallery/state/gallery_mode.dart';
+import '../enum/gallery_mode.dart';
 
 class GalleryModeSwitch extends StatelessWidget {
   const GalleryModeSwitch({

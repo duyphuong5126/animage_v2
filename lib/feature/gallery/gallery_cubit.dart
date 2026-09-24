@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:animage/domain/entity/gallery_level.dart';
-import 'package:animage/feature/gallery/state/gallery_mode.dart';
+import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
 import 'package:animage/feature/gallery/state/page_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -40,6 +40,7 @@ class GalleryCubit extends Cubit<GalleryState> {
             )
           : await _remoteDataSource.getPostList(pageIndex, state.galleryLevel);
       currentPages[pageIndex] = PageData(data: postList);
+      hasMoreData = postList.isNotEmpty;
     } catch (e) {
       currentPages[pageIndex] = PageError(error: e);
       hasMoreData = false;

@@ -111,7 +111,13 @@ class _Body extends StatelessWidget {
                           ),
                         ),
 
-                        _CoverFooter(post: state.post, artist: artist),
+                        _CoverFooter(
+                          post: state.post,
+                          artist: artist,
+                          isFavorite: postAdditionalInfo.favoriteIds.contains(
+                            post.id,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -349,10 +355,15 @@ class _Body extends StatelessWidget {
 }
 
 class _CoverFooter extends StatelessWidget {
-  const _CoverFooter({required this.post, this.artist});
+  const _CoverFooter({
+    required this.post,
+    required this.isFavorite,
+    this.artist,
+  });
 
   final Post post;
   final Artist? artist;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -387,8 +398,13 @@ class _CoverFooter extends StatelessWidget {
               FavoriteCheckbox(
                 size: space3,
                 color: brandColor,
-                isFavorite: false,
-                onFavoriteChanged: (_) {},
+                isFavorite: isFavorite,
+                onFavoriteChanged: (newFavorite) {
+                  context.read<PostAdditionalInfoCubit>().updateFavorite(
+                    post,
+                    isFavorite: newFavorite,
+                  );
+                },
               ),
             ],
           ),

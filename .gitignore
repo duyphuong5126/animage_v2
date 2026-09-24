@@ -56,3 +56,5 @@ app.*.map.json
 /lib/domain/entity/artist_list_change_log.freezed.dart
 /lib/domain/entity/artist_list_change_log.g.dart
 /lib/feature/post_additional_info/post_additional_info.freezed.dart
+/lib/feature/favorite/favorite_state.freezed.dart
+/lib/data/local/animage_database.g.dart

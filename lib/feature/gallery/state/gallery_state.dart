@@ -1,5 +1,5 @@
 import 'package:animage/domain/entity/gallery_level.dart';
-import 'package:animage/feature/gallery/state/gallery_mode.dart';
+import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:collection/collection.dart';
 
 import 'package:animage/domain/entity/post.dart';

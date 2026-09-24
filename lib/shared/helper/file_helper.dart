@@ -70,7 +70,7 @@ class FileHelper {
     }
     try {
       final hasPermission = await _checkAndRequestPermissions(
-        skipIfExists: true,
+        skipIfExists: false,
         mediaType: MediaType.image,
       );
       if (!hasPermission) {

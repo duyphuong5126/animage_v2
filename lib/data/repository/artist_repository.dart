@@ -8,7 +8,7 @@ import '../../utils/log.dart';
 
 const String artistAssetPath = 'assets/master_data/artist';
 
-const postKey = 'post';
+const postsKey = 'posts';
 const artistsKey = 'artists';
 
 class ArtistRepository {
@@ -45,20 +45,34 @@ class ArtistRepository {
     }
   }
 
-  static Artist? getArtist(Map<String, dynamic> data) {
-    final post = data[postKey] as Post;
-    final availableArtists = data[artistsKey] as Map<String, Artist>;
+  static Map<int, Artist> getArtistOfPosts(Map<String, dynamic> data) {
+    Map<int, Artist> artists = {};
+
+    List<Post> posts = data[postsKey] as List<Post>;
+    Map<String, Artist> availableArtists =
+        data[artistsKey] as Map<String, Artist>;
 
     final artistNames = availableArtists.keys;
 
-    Log.d('Artist', 'tagList=${post.tagList}');
-    for (final tag in post.tagList) {
-      final normalizedTag = tag.trim();
+    for (final post in posts) {
+      if (artists.containsKey(post.id)) {
+        Log.d('Artist', 'Loaded artist of post ${post.id}');
+      } else {
+        Artist? artist;
+        final tagList = post.tagList;
+        for (int index = 0; index < tagList.length && artist == null; index++) {
+          final normalizedTag = tagList[index].trim();
 
-      if (artistNames.contains(normalizedTag)) {
-        return availableArtists[normalizedTag];
+          if (artistNames.contains(normalizedTag)) {
+            artist = availableArtists[normalizedTag];
+          }
+        }
+        if (artist != null) {
+          artists[post.id] = artist;
+        }
       }
     }
-    return null;
+
+    return artists;
   }
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animage/constant.dart';
 import 'package:animage/dimension.dart';
+import 'package:animage/domain/entity/artist.dart';
 import 'package:animage/domain/entity/post.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
@@ -38,98 +39,107 @@ class _GalleryListItemState extends State<GalleryListItem> {
         ? BoxFit.cover
         : BoxFit.fitWidth;
 
-    return GestureDetector(
-      onTap: widget.onSelect,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(space2)),
-        child: AspectRatio(
-          aspectRatio: widget.itemAspectRatio,
-          child: Container(
-            color: context.cardViewBackgroundColor,
-            child: Stack(
-              alignment: AlignmentDirectional.topCenter,
-              children: [
-                CachedNetworkImage(
-                  imageUrl: data.sampleUrl ?? "",
-                  width: double.infinity,
-                  height: double.infinity,
-                  alignment: FractionalOffset.topCenter,
-                  errorWidget: (context, url, error) => Container(
-                    constraints: const BoxConstraints.expand(),
-                    color: context.cardViewBackgroundColor,
-                  ),
-                  fit: boxFit,
-                ),
-                Container(
-                  constraints: const BoxConstraints.expand(height: 80),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: space1,
-                    horizontal: space2,
-                  ),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[black200, transparency],
+    return BlocBuilder<PostAdditionalInfoCubit, PostAdditionalInfo>(
+      builder: (context, additionalInfo) {
+        final artist = additionalInfo.artistOfPost[data.id];
+        final isFavorite = additionalInfo.favoriteIds.contains(data.id);
+
+        return GestureDetector(
+          onTap: widget.onSelect,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(space2)),
+            child: AspectRatio(
+              aspectRatio: widget.itemAspectRatio,
+              child: Container(
+                color: context.cardViewBackgroundColor,
+                child: Stack(
+                  alignment: AlignmentDirectional.topCenter,
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl: data.sampleUrl ?? "",
+                      width: double.infinity,
+                      height: double.infinity,
+                      alignment: FractionalOffset.topCenter,
+                      errorWidget: (context, url, error) => Container(
+                        constraints: const BoxConstraints.expand(),
+                        color: context.cardViewBackgroundColor,
+                      ),
+                      fit: boxFit,
                     ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data.author ?? "",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: _authorTextStyle(context),
-                            ),
-                            _ArtistInfo(data),
-                          ],
+                    Container(
+                      constraints: const BoxConstraints.expand(height: 80),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: space1,
+                        horizontal: space2,
+                      ),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: <Color>[black200, transparency],
                         ),
                       ),
-                      FavoriteCheckbox(
-                        key: ValueKey(DateTime.now()),
-                        size: space3,
-                        color: brandColor,
-                        isFavorite: false,
-                        onFavoriteChanged: (_) {},
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  data.author ?? "",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: _authorTextStyle(context),
+                                ),
+                                _ArtistInfo(artist),
+                              ],
+                            ),
+                          ),
+                          FavoriteCheckbox(
+                            key: ValueKey(DateTime.now()),
+                            size: space3,
+                            color: brandColor,
+                            isFavorite: isFavorite,
+                            onFavoriteChanged: (newFavorite) {
+                              context
+                                  .read<PostAdditionalInfoCubit>()
+                                  .updateFavorite(
+                                    data,
+                                    isFavorite: newFavorite,
+                                  );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
 class _ArtistInfo extends StatelessWidget {
-  const _ArtistInfo(this.post);
+  const _ArtistInfo(this.artist);
 
-  final Post post;
+  final Artist? artist;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PostAdditionalInfoCubit, PostAdditionalInfo>(
-      builder: (context, additionalInfo) {
-        final artist = additionalInfo.artistOfPost[post.id];
-        return Visibility(
-          visible: artist != null,
-          child: Text(
-            artist?.name ?? '',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: _artistTextStyle(context),
-          ),
-        );
-      },
+    return Visibility(
+      visible: artist != null,
+      child: Text(
+        artist?.name ?? '',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: _artistTextStyle(context),
+      ),
     );
   }
 }

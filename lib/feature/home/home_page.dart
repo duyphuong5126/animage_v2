@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animage/constant.dart';
 import 'package:animage/dimension.dart';
+import 'package:animage/feature/favorite/favorite_page.dart';
 import 'package:animage/feature/gallery/gallery_page.dart';
 import 'package:animage/feature/settings/settings_page.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,10 +29,15 @@ class _HomePageAndroidState extends State<_HomePageAndroid> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: [const GalleryPage(), const SettingsPage()],
+        children: [
+          const GalleryPage(),
+          const FavoritePage(),
+          const SettingsPage(),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -42,6 +48,11 @@ class _HomePageAndroidState extends State<_HomePageAndroid> {
             tooltip: 'Gallery',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorite',
+            tooltip: 'Favorite',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.info),
             label: 'About',
             tooltip: 'About',
@@ -49,6 +60,7 @@ class _HomePageAndroidState extends State<_HomePageAndroid> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: brandColor,
+        unselectedItemColor: isDark ? grey217 : grey189,
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: _onTabSelected,
@@ -73,7 +85,11 @@ class _HomePageIOS extends StatefulWidget {
 class _HomePageIOSState extends State<_HomePageIOS> {
   @override
   Widget build(BuildContext context) {
-    List<Widget> tabs = [const GalleryPage(), const SettingsPage()];
+    List<Widget> tabs = [
+      const GalleryPage(),
+      const FavoritePage(),
+      const SettingsPage(),
+    ];
     final isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     Color selectedColor = isDark ? brandColorDark : brandColor;
 
@@ -89,6 +105,10 @@ class _HomePageIOSState extends State<_HomePageIOS> {
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.heart_fill, size: space3),
+              label: 'Favorite',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.info_circle_fill, size: space3),
               label: 'About',
             ),
           ],

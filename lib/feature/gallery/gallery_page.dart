@@ -6,7 +6,7 @@ import 'package:animage/dimension.dart';
 import 'package:animage/domain/entity/gallery_level.dart';
 import 'package:animage/domain/entity/post.dart';
 import 'package:animage/feature/gallery/gallery_cubit.dart';
-import 'package:animage/feature/gallery/state/gallery_mode.dart';
+import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
 import 'package:animage/feature/gallery/state/page_state.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
@@ -20,17 +20,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../shared/data/tag_selection.dart';
 
-class GalleryPage extends StatefulWidget {
+class GalleryPage extends StatelessWidget {
   const GalleryPage({super.key});
 
-  @override
-  State<GalleryPage> createState() => _GalleryPageState();
-}
-
-class _GalleryPageState extends State<GalleryPage> {
-  Future<void> _processPageData(Iterable<PageData> pages) async {
+  Future<void> _processPageData(
+    BuildContext context, {
+    required Iterable<PageData> pages,
+  }) async {
     final List<Post> posts = [for (final page in pages) ...page.data];
-    context.read<PostAdditionalInfoCubit>().processPosts(posts);
+    unawaited(context.read<PostAdditionalInfoCubit>().processPosts(posts));
   }
 
   @override
@@ -40,7 +38,12 @@ class _GalleryPageState extends State<GalleryPage> {
       create: (context) => GalleryCubit()..init(),
       child: BlocConsumer<GalleryCubit, GalleryState>(
         listener: (context, state) {
-          unawaited(_processPageData(state.pages.values.whereType<PageData>()));
+          unawaited(
+            _processPageData(
+              context,
+              pages: state.pages.values.whereType<PageData>(),
+            ),
+          );
         },
         builder: (context, state) {
           final hasTag =

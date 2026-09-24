@@ -7,5 +7,6 @@ part 'post_additional_info.freezed.dart';
 abstract class PostAdditionalInfo with _$PostAdditionalInfo {
   const factory PostAdditionalInfo({
     @Default({}) Map<int, Artist> artistOfPost,
+    @Default({}) Set<int> favoriteIds,
   }) = _PostAdditionalInfo;
 }

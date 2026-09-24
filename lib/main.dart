@@ -25,7 +25,7 @@ class AnimageAndroidApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => DownloadCubit()),
-        BlocProvider(create: (context) => PostAdditionalInfoCubit()),
+        BlocProvider(create: (context) => PostAdditionalInfoCubit()..init()),
       ],
       child: MaterialApp(
         theme: ThemeData(
