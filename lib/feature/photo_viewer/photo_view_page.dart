@@ -25,7 +25,7 @@ class _PhotoViewPageState extends State<PhotoViewPage>
     duration: const Duration(milliseconds: 500),
   );
 
-  int? _pageIndex;
+  int? _postId;
   bool _isSwipeEnabled = true;
 
   @override
@@ -33,27 +33,35 @@ class _PhotoViewPageState extends State<PhotoViewPage>
     final posts =
         (ModalRoute.of(context)?.settings.arguments as List<Post>?) ?? [];
 
-    Iterable<String> urls = posts
-        .map((post) => post.fileUrl ?? '')
-        .where((fileUrl) => fileUrl.isNotEmpty);
+    Map<int, String> data = {};
+    for (final post in posts) {
+      final url = post.fileUrl;
+      if (url != null && url.isNotEmpty) {
+        data[post.id] = url;
+      }
+    }
 
-    final currentIndex = _pageIndex;
-    final title = currentIndex != null ? "Post ${currentIndex + 1}" : null;
+    final title = _postId != null ? "Post #$_postId" : null;
 
-    final body = urls.isNotEmpty
+    final pages = data.entries;
+    if (_postId == null && pages.isNotEmpty) {
+      _postId = pages.first.key;
+    }
+
+    final body = pages.isNotEmpty
         ? PageView.builder(
             allowImplicitScrolling: true,
             physics: _isSwipeEnabled
                 ? const AlwaysScrollableScrollPhysics()
                 : const NeverScrollableScrollPhysics(),
-            itemCount: urls.length,
+            itemCount: pages.length,
             onPageChanged: (int pageIndex) {
               setState(() {
-                _pageIndex = pageIndex;
+                _postId = pages.elementAt(pageIndex).key;
               });
             },
             itemBuilder: (context, int index) {
-              String url = urls.elementAt(index);
+              String url = pages.elementAt(index).value;
               return PhotoView(
                 enableRotation: false,
                 minScale: PhotoViewComputedScale.contained * 1.0,

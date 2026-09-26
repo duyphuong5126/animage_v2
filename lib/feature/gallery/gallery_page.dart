@@ -6,6 +6,7 @@ import 'package:animage/dimension.dart';
 import 'package:animage/domain/entity/gallery_level.dart';
 import 'package:animage/domain/entity/post.dart';
 import 'package:animage/feature/gallery/gallery_cubit.dart';
+import 'package:animage/feature/tag_selection/tag_selection_cubit.dart';
 import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
 import 'package:animage/feature/gallery/state/page_state.dart';
@@ -38,107 +39,120 @@ class GalleryPage extends StatelessWidget {
     bool isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     return BlocProvider(
       create: (context) => GalleryCubit()..init(),
-      child: BlocConsumer<GalleryCubit, GalleryState>(
-        listener: (context, state) {
-          unawaited(
-            _processPageData(
-              context,
-              pages: state.pages.values.whereType<PageData>(),
-            ),
-          );
+      child: BlocListener<TagSelectionCubit, List<String>>(
+        listener: (context, tags) {
+          context.read<GalleryCubit>().addTags(tags);
         },
-        builder: (context, state) {
-          final hasTag =
-              state.tags.isNotEmpty || state.galleryLevel != GalleryLevel.safe;
+        child: BlocConsumer<GalleryCubit, GalleryState>(
+          listener: (context, state) {
+            unawaited(
+              _processPageData(
+                context,
+                pages: state.pages.values.whereType<PageData>(),
+              ),
+            );
+          },
+          builder: (context, state) {
+            final hasTag =
+                state.tags.isNotEmpty ||
+                state.galleryLevel != GalleryLevel.safe;
 
-          final hasError = state.pages.values.any((page) => page is PageError);
-          logD('hasError=$hasError');
-          final body = Stack(
-            alignment: Alignment.topRight,
-            children: [
-              state.data.isNotEmpty || state.loading
-                  ? _InfinityGallery(state)
-                  : EmptyPageContent(
-                      title: hasError ? 'Error occurred' : 'Empty Gallery',
-                      message: hasError
-                          ? 'Please try again.'
-                          : 'No content matches you search.',
-                      actionData: hasError
-                          ? EmptyContentAction(
-                              label: 'Retry',
-                              action: () {
-                                context.read<GalleryCubit>().retry();
-                              },
-                            )
-                          : null,
-                    ),
-              Container(
-                color: hasTag
-                    ? isDark
-                          ? black
-                          : white
-                    : null,
-                padding: EdgeInsetsGeometry.symmetric(
-                  vertical: spaceHalf,
-                  horizontal: space2,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (hasTag)
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            spacing: space1,
-                            children: [
-                              for (final tag in state.tags)
-                                RemovableChip(
-                                  label: tag,
-                                  bgColor: brandColor,
-                                  textColor: white,
-                                  allowRemoval: true,
-                                  onRemove: () {
-                                    context.read<GalleryCubit>().removeTag(tag);
-                                  },
-                                ),
-                              if (state.galleryLevel != GalleryLevel.safe)
-                                RemovableChip(
-                                  label: state.galleryLevel.value,
-                                  bgColor: brandColor,
-                                  textColor: white,
-                                  allowRemoval: true,
-                                  onRemove: () {
-                                    context.read<GalleryCubit>().setLevel(
-                                      GalleryLevel.safe,
-                                    );
-                                  },
-                                ),
-                            ],
+            final hasError = state.pages.values.any(
+              (page) => page is PageError,
+            );
+            logD('hasError=$hasError');
+            final body = Stack(
+              alignment: Alignment.topRight,
+              children: [
+                state.data.isNotEmpty || state.loading
+                    ? _InfinityGallery(state)
+                    : EmptyPageContent(
+                        title: hasError ? 'Error occurred' : 'Empty Gallery',
+                        message: hasError
+                            ? 'Please try again.'
+                            : 'No content matches you search.',
+                        actionData: hasError
+                            ? EmptyContentAction(
+                                label: 'Retry',
+                                action: () {
+                                  context.read<GalleryCubit>().retry();
+                                },
+                              )
+                            : null,
+                      ),
+                Container(
+                  color: hasTag
+                      ? isDark
+                            ? black
+                            : white
+                      : null,
+                  padding: EdgeInsetsGeometry.symmetric(
+                    vertical: spaceHalf,
+                    horizontal: space1,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (hasTag)
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              spacing: space1,
+                              children: [
+                                for (final tag in state.tags)
+                                  RemovableChip(
+                                    label: tag,
+                                    bgColor: brandColor,
+                                    textColor: white,
+                                    allowRemoval: true,
+                                    onRemove: () {
+                                      context.read<GalleryCubit>().removeTag(
+                                        tag,
+                                      );
+                                    },
+                                  ),
+                                if (state.galleryLevel != GalleryLevel.safe)
+                                  RemovableChip(
+                                    label: state.galleryLevel.value,
+                                    bgColor: brandColor,
+                                    textColor: white,
+                                    allowRemoval: true,
+                                    onRemove: () {
+                                      context.read<GalleryCubit>().setLevel(
+                                        GalleryLevel.safe,
+                                      );
+                                    },
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
+                      GalleryModeSwitch(
+                        onModeSelected: (mode) {
+                          context.read<GalleryCubit>().changeMode(mode);
+                        },
+                        galleryMode: state.galleryMode,
                       ),
-                    GalleryModeSwitch(
-                      onModeSelected: (mode) {
-                        context.read<GalleryCubit>().changeMode(mode);
-                      },
-                      galleryMode: state.galleryMode,
-                    ),
-                  ],
+                      const SizedBox(width: space1),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-          return Platform.isIOS
-              ? CupertinoPageScaffold(
-                  navigationBar: CupertinoNavigationBar(middle: _SearchView()),
-                  child: SafeArea(child: body),
-                )
-              : Scaffold(
-                  appBar: AppBar(title: _SearchView()),
-                  body: SafeArea(child: body),
-                );
-        },
+              ],
+            );
+            return Platform.isIOS
+                ? CupertinoPageScaffold(
+                    navigationBar: CupertinoNavigationBar(
+                      middle: _SearchView(),
+                    ),
+                    child: SafeArea(child: body),
+                  )
+                : Scaffold(
+                    appBar: AppBar(title: _SearchView()),
+                    body: SafeArea(child: body),
+                  );
+          },
+        ),
       ),
     );
   }
@@ -247,7 +261,7 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
     final result = await Navigator.of(context)
         .pushNamed(detailsPageRoute, arguments: post);
     if (result is TagSelection && context.mounted) {
-      context.read<GalleryCubit>().search(result.tag);
+      context.read<GalleryCubit>().addTags(result.tags);
     }
   }
 

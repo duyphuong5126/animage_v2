@@ -80,6 +80,28 @@ class GalleryCubit extends Cubit<GalleryState> {
     emit(state.copyWith(galleryMode: mode));
   }
 
+  void addTags(List<String> tags) {
+    final finalTags = [...state.tags];
+    bool hasNewTag = false;
+    for (final tag in tags) {
+      if (!finalTags.contains(tag)) {
+        hasNewTag = true;
+        finalTags.add(tag);
+      }
+    }
+    if (hasNewTag) {
+      emit(
+        state.copyWith(
+          pages: {},
+          loading: false,
+          hasMoreData: false,
+          tags: finalTags,
+        ),
+      );
+      init();
+    }
+  }
+
   void removeTag(String tag) {
     final normalizedTag = tag.trim().toLowerCase();
     emit(

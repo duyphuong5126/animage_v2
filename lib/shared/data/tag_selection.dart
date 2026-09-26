@@ -1,5 +1,5 @@
 class TagSelection {
-  final String tag;
+  final List<String> tags;
 
-  const TagSelection(this.tag);
+  const TagSelection(this.tags);
 }

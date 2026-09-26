@@ -15,9 +15,11 @@ import 'package:animage/feature/post_detail/post_detail_state.dart';
 import 'package:animage/shared/widgets/dialog.dart';
 import 'package:animage/shared/widgets/favorite_checkbox.dart';
 import 'package:animage/shared/widgets/gallery_list_item.dart';
+import 'package:animage/shared/widgets/linkify_text.dart';
 import 'package:animage/shared/widgets/list_loading_footer.dart';
 import 'package:animage/shared/widgets/url_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,6 +64,12 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     final post = state.post;
     final postAdditionalInfo = context.watch<PostAdditionalInfoCubit>().state;
+    final viewerList = [post];
+    for (final child in state.children) {
+      if (viewerList.none((p) => p.id == child.id)) {
+        viewerList.add(child);
+      }
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -92,15 +100,15 @@ class _Body extends StatelessWidget {
               CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: Stack(
-                      alignment: Alignment.bottomCenter,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context)
-                                .pushNamed(photoViewerRoute, arguments: [post]);
-                          },
-                          child: CachedNetworkImage(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context)
+                            .pushNamed(photoViewerRoute, arguments: viewerList);
+                      },
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          CachedNetworkImage(
                             width: maxWidth,
                             height: coverHeight,
                             imageUrl: post.sampleUrl ?? "",
@@ -109,16 +117,16 @@ class _Body extends StatelessWidget {
                               color: context.cardViewBackgroundColor,
                             ),
                           ),
-                        ),
 
-                        _CoverFooter(
-                          post: state.post,
-                          artist: artist,
-                          isFavorite: postAdditionalInfo.favoriteIds.contains(
-                            post.id,
+                          _CoverFooter(
+                            post: state.post,
+                            artist: artist,
+                            isFavorite: postAdditionalInfo.favoriteIds.contains(
+                              post.id,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 
@@ -157,7 +165,7 @@ class _Body extends StatelessWidget {
                                 Navigator.of(context).popUntilWithResult(
                                   (route) =>
                                       route.settings.name != detailsPageRoute,
-                                  TagSelection(tag),
+                                  TagSelection([tag]),
                                 );
                               },
                               child: RemovableChip(
@@ -191,9 +199,10 @@ class _Body extends StatelessWidget {
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: space1),
-                      child: Text(
+                      child: LinkifyText(
                         post.sourceLabel,
-                        style: _tagTitleTextStyle(context),
+                        textStyle: _tagTitleTextStyle(context),
+                        linkStyle: _tagTitleTextStyle(context),
                       ),
                     ),
                   ),

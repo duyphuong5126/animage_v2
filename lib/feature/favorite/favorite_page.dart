@@ -19,6 +19,7 @@ import '../../shared/enum/gallery_mode.dart';
 import '../../shared/widgets/gallery_list_item.dart';
 import '../../shared/widgets/gallery_mode_switch.dart';
 import '../../shared/widgets/list_loading_footer.dart';
+import '../tag_selection/tag_selection_cubit.dart';
 
 final _favoriteCountFormat = NumberFormat.decimalPattern();
 
@@ -73,9 +74,10 @@ class FavoritePage extends StatelessWidget {
               ],
             );
 
-            final title = Text(
-              'Favorites (${_favoriteCountFormat.format(state.favoriteCount)})',
-            );
+            final titleText = state.favoriteCount > 0
+                ? 'Favorites (${_favoriteCountFormat.format(state.favoriteCount)})'
+                : 'Favorites';
+            final title = Text(titleText);
             return Platform.isIOS
                 ? CupertinoPageScaffold(
                     navigationBar: CupertinoNavigationBar(middle: title),
@@ -196,7 +198,7 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
     final result = await Navigator.of(context)
         .pushNamed(detailsPageRoute, arguments: post);
     if (result is TagSelection && context.mounted) {
-      //context.read<GalleryCubit>().search(result.tag);
+      context.read<TagSelectionCubit>().updateTags(result.tags);
     }
   }
 

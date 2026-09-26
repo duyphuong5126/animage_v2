@@ -5,15 +5,21 @@ import 'package:animage/dimension.dart';
 import 'package:animage/feature/favorite/favorite_page.dart';
 import 'package:animage/feature/gallery/gallery_page.dart';
 import 'package:animage/feature/settings/settings_page.dart';
+import 'package:animage/feature/tag_selection/tag_selection_cubit.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Platform.isIOS ? _HomePageIOS() : _HomePageAndroid();
+    return BlocProvider(
+      create: (context) => TagSelectionCubit(),
+      child: Platform.isIOS ? _HomePageIOS() : _HomePageAndroid(),
+    );
   }
 }
 
@@ -30,40 +36,53 @@ class _HomePageAndroidState extends State<_HomePageAndroid> {
   @override
   Widget build(BuildContext context) {
     final isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          const GalleryPage(),
-          const FavoritePage(),
-          const SettingsPage(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Gallery',
-            tooltip: 'Gallery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorite',
-            tooltip: 'Favorite',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'About',
-            tooltip: 'About',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: brandColor,
-        unselectedItemColor: isDark ? grey217 : grey189,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: _onTabSelected,
+    return BlocListener<TagSelectionCubit, List<String>>(
+      listenWhen: (prev, current) {
+        return current.isNotEmpty &&
+            !DeepCollectionEquality().equals(prev, current);
+      },
+      listener: (BuildContext context, List<String> state) {
+        if (_selectedIndex != 0) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            const GalleryPage(),
+            const FavoritePage(),
+            const SettingsPage(),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Gallery',
+              tooltip: 'Gallery',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Favorite',
+              tooltip: 'Favorite',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.info),
+              label: 'About',
+              tooltip: 'About',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: brandColor,
+          unselectedItemColor: isDark ? grey217 : grey189,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          onTap: _onTabSelected,
+        ),
       ),
     );
   }
@@ -83,6 +102,8 @@ class _HomePageIOS extends StatefulWidget {
 }
 
 class _HomePageIOSState extends State<_HomePageIOS> {
+  final CupertinoTabController _tabController = CupertinoTabController();
+
   @override
   Widget build(BuildContext context) {
     List<Widget> tabs = [
@@ -93,29 +114,41 @@ class _HomePageIOSState extends State<_HomePageIOS> {
     final isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     Color selectedColor = isDark ? brandColorDark : brandColor;
 
-    return CupertinoPageScaffold(
-      resizeToAvoidBottomInset: false,
-      child: CupertinoTabScaffold(
-        tabBar: CupertinoTabBar(
-          activeColor: selectedColor,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.home, size: space3),
-              label: 'Gallery',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.heart_fill, size: space3),
-              label: 'Favorite',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.info_circle_fill, size: space3),
-              label: 'About',
-            ),
-          ],
+    return BlocListener<TagSelectionCubit, List<String>>(
+      listenWhen: (prev, current) {
+        return current.isNotEmpty &&
+            !DeepCollectionEquality().equals(prev, current);
+      },
+      listener: (BuildContext context, List<String> state) {
+        if (_tabController.index != 0) {
+          _tabController.index = 0;
+        }
+      },
+      child: CupertinoPageScaffold(
+        resizeToAvoidBottomInset: false,
+        child: CupertinoTabScaffold(
+          controller: _tabController,
+          tabBar: CupertinoTabBar(
+            activeColor: selectedColor,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.home, size: space3),
+                label: 'Gallery',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.heart_fill, size: space3),
+                label: 'Favorite',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.info_circle_fill, size: space3),
+                label: 'About',
+              ),
+            ],
+          ),
+          tabBuilder: (context, int index) {
+            return tabs[index];
+          },
         ),
-        tabBuilder: (context, int index) {
-          return tabs[index];
-        },
       ),
     );
   }

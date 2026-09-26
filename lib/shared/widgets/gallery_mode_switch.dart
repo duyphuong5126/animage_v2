@@ -25,12 +25,11 @@ class GalleryModeSwitch extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(space1)),
         color: bgColor,
       ),
-      padding: EdgeInsets.symmetric(horizontal: spaceOneHalf, vertical: space1),
+      padding: EdgeInsets.all(space1),
       child: SizedBox(
         height: space4,
         width: 100,
         child: Container(
-          margin: const EdgeInsets.only(right: spaceHalf),
           height: spaceHalf,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(spaceHalf)),
