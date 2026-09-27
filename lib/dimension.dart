@@ -8,6 +8,7 @@ const space3 = space1 * 3;
 const space4 = space1 * 4;
 const space5 = space1 * 5;
 const space6 = space1 * 6;
+const space7 = space1 * 7;
 const space8 = space1 * 8;
 const space10 = space1 * 10;
 const space11 = space1 * 11;

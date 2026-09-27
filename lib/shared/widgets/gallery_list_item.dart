@@ -67,7 +67,7 @@ class _GalleryListItemState extends State<GalleryListItem> {
                       fit: boxFit,
                     ),
                     Container(
-                      constraints: const BoxConstraints.expand(height: 80),
+                      constraints: const BoxConstraints.expand(height: space11),
                       padding: const EdgeInsets.symmetric(
                         vertical: space1,
                         horizontal: space2,
@@ -80,7 +80,8 @@ class _GalleryListItemState extends State<GalleryListItem> {
                         ),
                       ),
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
                         children: [
                           Expanded(
                             child: Column(
@@ -153,7 +154,7 @@ TextStyle? _authorTextStyle(BuildContext context) {
 
 TextStyle? _artistTextStyle(BuildContext context) {
   return (Platform.isIOS
-          ? CupertinoTheme.of(context).textTheme.navTitleTextStyle
+          ? CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle
           : Theme.of(context).textTheme.headlineMedium)
       ?.copyWith(color: white);
 }

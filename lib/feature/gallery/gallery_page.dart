@@ -75,7 +75,7 @@ class GalleryPage extends StatelessWidget {
                             ? EmptyContentAction(
                                 label: 'Retry',
                                 action: () {
-                                  context.read<GalleryCubit>().retry();
+                                  context.read<GalleryCubit>().refresh();
                                 },
                               )
                             : null,
@@ -169,11 +169,15 @@ class _InfinityGallery extends StatefulWidget {
 
 class _InfinityGalleryState extends State<_InfinityGallery> {
   final ScrollController _scrollController = ScrollController();
+  GlobalKey<RefreshIndicatorState>? _refreshIndicatorKey;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    if (Platform.isAndroid) {
+      _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+    }
   }
 
   @override
@@ -188,33 +192,96 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
     final itemCount = list.length;
     final hasMoreData = widget.state.hasMoreData;
 
-    if (widget.state.galleryMode == GalleryMode.grid) {
-      return Padding(
+    Widget listWidget;
+    final isGrid = widget.state.galleryMode == GalleryMode.grid;
+    if (isGrid || Platform.isIOS) {
+      listWidget = Padding(
         padding: EdgeInsets.symmetric(horizontal: space1),
         child: CustomScrollView(
           controller: _scrollController,
+          // BouncingScrollPhysics is critical for iOS overscroll physics
+          physics: Platform.isIOS
+              ? const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                )
+              : null,
           slivers: [
+            if (Platform.isIOS)
+              CupertinoSliverRefreshControl(
+                onRefresh: () => _refreshList(context),
+                refreshIndicatorExtent: space5,
+                builder:
+                    (
+                      indicatorContext,
+                      state,
+                      pulledExtent,
+                      refreshTriggerPullDistance,
+                      refreshIndicatorExtent,
+                    ) {
+                      return state == RefreshIndicatorMode.done ||
+                              state == RefreshIndicatorMode.armed
+                          ? Container(
+                              width: double.infinity,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: space1,
+                              ),
+                              child: Text('Refreshing'),
+                            )
+                          : CupertinoSliverRefreshControl.buildRefreshIndicator(
+                              context,
+                              state,
+                              pulledExtent,
+                              refreshTriggerPullDistance,
+                              refreshIndicatorExtent,
+                            );
+                    },
+              ),
+
             SliverToBoxAdapter(child: SizedBox(height: space8)),
 
-            SliverGrid.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: space1,
-                crossAxisSpacing: space1,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                final post = list[index];
-                return GalleryListItem(
-                  data: post,
-                  itemAspectRatio: 1.0,
-                  onSelect: () {
-                    unawaited(_navigateToDetailPage(context, post: post));
-                  },
-                );
-              },
-            ),
+            isGrid
+                ? SliverGrid.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: space1,
+                          crossAxisSpacing: space1,
+                          childAspectRatio: 1.0,
+                        ),
+                    itemCount: itemCount,
+                    itemBuilder: (context, index) {
+                      final post = list[index];
+                      return GalleryListItem(
+                        data: post,
+                        itemAspectRatio: 1.0,
+                        onSelect: () {
+                          unawaited(_navigateToDetailPage(context, post: post));
+                        },
+                      );
+                    },
+                  )
+                : SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      childCount: itemCount,
+                      (context, index) {
+                        final post = list[index];
+
+                        return Padding(
+                          padding: EdgeInsetsGeometry.only(bottom: space1),
+                          child: GalleryListItem(
+                            data: post,
+                            itemAspectRatio: 1.5,
+                            onSelect: () {
+                              unawaited(
+                                _navigateToDetailPage(context, post: post),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
 
             SliverToBoxAdapter(
               child: Padding(
@@ -225,33 +292,45 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
           ],
         ),
       );
+    } else {
+      listWidget = ListView.separated(
+        controller: _scrollController,
+        padding: EdgeInsets.symmetric(horizontal: space1),
+        itemCount: itemCount + (hasMoreData ? 1 : 0) + 1,
+        separatorBuilder: (context, index) {
+          return SizedBox(height: space1);
+        },
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return SizedBox(height: space6);
+          }
+          if (index == itemCount + 1) {
+            return ListLoadingFooter();
+          }
+          final dataIndex = index - 1;
+          final post = list[dataIndex];
+          return GalleryListItem(
+            data: post,
+            itemAspectRatio: 1.5,
+            onSelect: () {
+              unawaited(_navigateToDetailPage(context, post: post));
+            },
+          );
+        },
+      );
     }
+    return Platform.isAndroid
+        ? RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: () => _refreshList(context),
+            child: listWidget,
+          )
+        : listWidget;
+  }
 
-    return ListView.separated(
-      controller: _scrollController,
-      padding: EdgeInsets.symmetric(horizontal: space1),
-      itemCount: itemCount + (hasMoreData ? 1 : 0) + 1,
-      separatorBuilder: (context, index) {
-        return SizedBox(height: space1);
-      },
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return SizedBox(height: space6);
-        }
-        if (index == itemCount + 1) {
-          return ListLoadingFooter();
-        }
-        final dataIndex = index - 1;
-        final post = list[dataIndex];
-        return GalleryListItem(
-          data: post,
-          itemAspectRatio: 1.5,
-          onSelect: () {
-            unawaited(_navigateToDetailPage(context, post: post));
-          },
-        );
-      },
-    );
+  Future<void> _refreshList(BuildContext context) async {
+    logD('Refresh list');
+    context.read<GalleryCubit>().refresh();
   }
 
   Future<void> _navigateToDetailPage(
@@ -313,40 +392,67 @@ class _SearchViewState extends State<_SearchView> {
 
     return SizedBox(
       height: space6, // = 48.0
-      child: TextField(
-        controller: _editingController,
-        style: textStyle,
-        textAlignVertical: TextAlignVertical.center,
-        // 2. Ép nội dung căn giữa theo chiều dọc
-        onSubmitted: (query) {
-          context.read<GalleryCubit>().search(query);
-          _editingController.clear();
-        },
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: isDark ? white : grey217,
-          hintText: 'Search',
-          hintStyle: textStyle.copyWith(color: grey117),
+      child: Platform.isIOS
+          ? CupertinoTextField(
+              controller: _editingController,
+              style: textStyle,
+              textAlignVertical: TextAlignVertical.center,
+              onSubmitted: (query) {
+                context.read<GalleryCubit>().search(query);
+                _editingController.clear();
+              },
+              textInputAction: TextInputAction.search,
+              placeholder: 'Search',
+              placeholderStyle: textStyle.copyWith(color: grey117),
+              padding: EdgeInsets.symmetric(
+                horizontal: space2, // = 16.0 (khoảng cách lề trái phải rất đẹp)
+                vertical: spaceOneHalf,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? white : grey217,
+                border: Border.fromBorderSide(BorderSide.none),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    Platform.isIOS ? iosTextFieldRadius : space1,
+                  ), // space1 = 8.0
+                ),
+              ),
+            )
+          : TextField(
+              controller: _editingController,
+              style: textStyle,
+              textAlignVertical: TextAlignVertical.center,
+              // 2. Ép nội dung căn giữa theo chiều dọc
+              onSubmitted: (query) {
+                context.read<GalleryCubit>().search(query);
+                _editingController.clear();
+              },
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: isDark ? white : grey217,
+                hintText: 'Search',
+                hintStyle: textStyle.copyWith(color: grey117),
 
-          isDense: true,
-          // 3. Sử dụng padding vừa phải cho chiều cao 48.0
-          // vertical: 12.0 giúp cân bằng khoảng trống trên/dưới mà không làm vỡ layout
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: space2, // = 16.0 (khoảng cách lề trái phải rất đẹp)
-            vertical: spaceOneHalf,
-          ),
+                isDense: true,
+                // 3. Sử dụng padding vừa phải cho chiều cao 48.0
+                // vertical: 12.0 giúp cân bằng khoảng trống trên/dưới mà không làm vỡ layout
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal:
+                      space2, // = 16.0 (khoảng cách lề trái phải rất đẹp)
+                  vertical: spaceOneHalf,
+                ),
 
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(
-                Platform.isIOS ? iosTextFieldRadius : space1,
-              ), // space1 = 8.0
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(
+                      Platform.isIOS ? iosTextFieldRadius : space1,
+                    ), // space1 = 8.0
+                  ),
+                  borderSide: BorderSide.none,
+                ),
+              ),
             ),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
     );
   }
 }

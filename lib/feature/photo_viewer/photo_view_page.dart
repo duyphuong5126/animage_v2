@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:animage/dimension.dart';
+import 'package:animage/shared/widgets/fading_appbar_ios.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,12 +42,12 @@ class _PhotoViewPageState extends State<PhotoViewPage>
       }
     }
 
-    final title = _postId != null ? "Post #$_postId" : null;
-
     final pages = data.entries;
     if (_postId == null && pages.isNotEmpty) {
       _postId = pages.first.key;
     }
+
+    final title = _postId != null ? "Post #$_postId" : null;
 
     final body = pages.isNotEmpty
         ? PageView.builder(
@@ -104,7 +105,25 @@ class _PhotoViewPageState extends State<PhotoViewPage>
           )
         : Container();
     return Platform.isIOS
-        ? CupertinoPageScaffold(child: body)
+        ? CupertinoPageScaffold(
+            backgroundColor: CupertinoColors.black,
+            child: Stack(
+              children: [
+                body,
+                FadingAppBarIOS(
+                  appBar: CupertinoNavigationBar(
+                    backgroundColor: transparency,
+                    enableBackgroundFilterBlur: false,
+                    border: null,
+                    middle: title != null
+                        ? Text(title, style: const TextStyle(color: white))
+                        : null,
+                  ),
+                  controller: _animationController,
+                ),
+              ],
+            ),
+          )
         : Scaffold(
             extendBodyBehindAppBar: true,
             extendBody: true,

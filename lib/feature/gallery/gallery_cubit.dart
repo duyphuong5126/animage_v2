@@ -127,7 +127,7 @@ class GalleryCubit extends Cubit<GalleryState> {
     init();
   }
 
-  void retry() {
+  void refresh() {
     emit(state.copyWith(pages: {}, loading: false, hasMoreData: false));
     init();
   }

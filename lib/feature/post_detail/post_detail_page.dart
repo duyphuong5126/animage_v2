@@ -95,6 +95,7 @@ class _Body extends StatelessWidget {
               : coverMaxHeight;
 
           final artist = postAdditionalInfo.artistOfPost[post.id];
+          final artistUrls = artist?.urls;
           return Stack(
             children: [
               CustomScrollView(
@@ -247,7 +248,7 @@ class _Body extends StatelessWidget {
                   ),
 
                   // Artist info
-                  if (artist != null) ...[
+                  if (artistUrls != null && artistUrls.isNotEmpty) ...[
                     SliverToBoxAdapter(child: SizedBox(height: spaceOneHalf)),
 
                     SliverToBoxAdapter(
@@ -262,7 +263,7 @@ class _Body extends StatelessWidget {
                               style: _tagTitleTextStyle(context),
                             ),
 
-                            for (final url in artist.urls)
+                            for (final url in artistUrls)
                               UrlText(
                                 url: url,
                                 textStyle: _tagTitleTextStyle(context),

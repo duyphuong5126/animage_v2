@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:animage/constant.dart';
 import 'package:animage/data/repository/artist_repository.dart';
 import 'package:animage/feature/downloader/download_cubit.dart';
@@ -5,6 +7,7 @@ import 'package:animage/feature/home/home_page.dart';
 import 'package:animage/feature/photo_viewer/photo_view_page.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,7 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await ArtistRepository.instance.loadArtists();
-  runApp(const AnimageAndroidApp());
+  runApp(Platform.isIOS ? const AnimageIOSApp() : const AnimageAndroidApp());
 }
 
 class AnimageAndroidApp extends StatelessWidget {
@@ -50,6 +53,33 @@ class AnimageAndroidApp extends StatelessWidget {
               statusBarColor: Colors.transparent, // Giữ thanh trạng thái trong suốt phẳng với AppBar
             ),
           ),
+        ),
+        routes: {
+          '/': (context) => const HomePage(),
+          detailsPageRoute: (context) => const PostDetailPage(),
+          photoViewerRoute: (context) => const PhotoViewPage(),
+        },
+      ),
+    );
+  }
+}
+
+class AnimageIOSApp extends StatelessWidget {
+  const AnimageIOSApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    bool isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => DownloadCubit()),
+        BlocProvider(create: (context) => PostAdditionalInfoCubit()..init()),
+      ],
+      child: CupertinoApp(
+        theme: CupertinoThemeData(
+          brightness: isDark ? Brightness.dark : Brightness.light,
+          primaryColor: brandColor,
+          barBackgroundColor: CupertinoColors.transparent,
         ),
         routes: {
           '/': (context) => const HomePage(),

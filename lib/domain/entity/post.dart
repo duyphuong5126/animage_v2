@@ -101,7 +101,7 @@ extension PostEntityExtension on Post {
   }
 
   String get sourceLabel {
-    return 'Source: ${source ?? 'Unknown'}';
+    return 'Source: ${source?.isNotEmpty == true ? source : 'Unknown'}';
   }
 
   String get fileSizeLabel {
