@@ -20,19 +20,26 @@ void showYesNoDialog(
     showCupertinoDialog(
       context: context,
       builder: (dialogContext) {
-        return YesNoDialogContent(
-          title: title,
-          message: message,
-          labelYes: labelYes,
-          labelNo: labelNo,
-          actionYes: () {
-            Navigator.of(dialogContext).pop();
-            actionYes?.call();
-          },
-          actionNo: () {
-            Navigator.of(dialogContext).pop();
-            actionNo?.call();
-          },
+        return Center(
+          child: IntrinsicWidth(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: space2),
+              child: YesNoDialogContent(
+                title: title,
+                message: message,
+                labelYes: labelYes,
+                labelNo: labelNo,
+                actionYes: () {
+                  Navigator.of(dialogContext).pop();
+                  actionYes?.call();
+                },
+                actionNo: () {
+                  Navigator.of(dialogContext).pop();
+                  actionNo?.call();
+                },
+              ),
+            ),
+          ),
         );
       },
     );
@@ -72,14 +79,21 @@ void showConfirmationDialog(
     showCupertinoDialog(
       context: context,
       builder: (dialogContext) {
-        return ConfirmationDialogContent(
-          title: title,
-          message: message,
-          labelOk: labelOk,
-          actionOk: () {
-            Navigator.of(dialogContext).pop();
-            actionOk?.call();
-          },
+        return Center(
+          child: IntrinsicWidth(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: space2),
+              child: ConfirmationDialogContent(
+                title: title,
+                message: message,
+                labelOk: labelOk,
+                actionOk: () {
+                  Navigator.of(dialogContext).pop();
+                  actionOk?.call();
+                },
+              ),
+            ),
+          ),
         );
       },
     );
