@@ -96,7 +96,10 @@ class FileHelper {
         albumPath: albumPath,
         skipIfExists: true,
       );
-      return PostDownloadState.finished(savedResult: result);
+      return PostDownloadState.finished(
+        savedResult: result,
+        savedPath: albumPath,
+      );
     } catch (e) {
       logE('Failed to download file $fileUrl', error: e);
       return PostDownloadState.finished(

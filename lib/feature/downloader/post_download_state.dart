@@ -7,8 +7,10 @@ part 'post_download_state.freezed.dart';
 sealed class PostDownloadState with _$PostDownloadState {
   const factory PostDownloadState.downloading() = DownloadingState;
 
-  const factory PostDownloadState.finished({required SaveResult savedResult}) =
-      DownloadFinishedState;
+  const factory PostDownloadState.finished({
+    required SaveResult savedResult,
+    @Default(null) String? savedPath,
+  }) = DownloadFinishedState;
 
   const factory PostDownloadState.permissionNotGranted() =
       PermissionNotGrantedState;

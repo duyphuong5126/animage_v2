@@ -61,6 +61,48 @@ void showYesNoDialog(
   }
 }
 
+void showConfirmationDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  String labelOk = 'Ok',
+  YesNoDialogAction? actionOk,
+}) {
+  if (Platform.isIOS) {
+    showCupertinoDialog(
+      context: context,
+      builder: (dialogContext) {
+        return ConfirmationDialogContent(
+          title: title,
+          message: message,
+          labelOk: labelOk,
+          actionOk: () {
+            Navigator.of(dialogContext).pop();
+            actionOk?.call();
+          },
+        );
+      },
+    );
+  } else {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          child: ConfirmationDialogContent(
+            title: title,
+            message: message,
+            labelOk: labelOk,
+            actionOk: () {
+              Navigator.of(dialogContext).pop();
+              actionOk?.call();
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
 class YesNoDialogContent extends StatelessWidget {
   const YesNoDialogContent({
     super.key,
@@ -97,56 +139,107 @@ class YesNoDialogContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: space2,
         children: [
-          SizedBox(
-            child: Text(
-              title,
-              style: _titleTextStyle(context),
-              textAlign: TextAlign.center,
-            ),
+          Text(
+            title,
+            style: _titleTextStyle(context),
+            textAlign: TextAlign.center,
           ),
-          SizedBox(
-            child: Text(
-              message,
-              style: _messageTextStyle(context),
-              textAlign: TextAlign.center,
-            ),
+          Text(
+            message,
+            style: _messageTextStyle(context),
+            textAlign: TextAlign.center,
           ),
-          SizedBox(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Platform.isIOS
-                      ? CupertinoButton(
-                          onPressed: actionNo,
+          Row(
+            children: [
+              Expanded(
+                child: Platform.isIOS
+                    ? CupertinoButton(
+                        onPressed: actionNo,
+                        foregroundColor: isDark ? white : black,
+                        child: Text(labelNo),
+                      )
+                    : TextButton(
+                        onPressed: actionNo,
+                        style: TextButton.styleFrom(
                           foregroundColor: isDark ? white : black,
-                          child: Text(labelNo),
-                        )
-                      : TextButton(
-                          onPressed: actionNo,
-                          style: TextButton.styleFrom(
-                            foregroundColor: isDark ? white : black,
-                          ),
-                          child: Text(labelNo),
                         ),
-                ),
+                        child: Text(labelNo),
+                      ),
+              ),
 
-                Expanded(
-                  child: Platform.isIOS
-                      ? CupertinoButton(
-                          onPressed: actionYes,
+              Expanded(
+                child: Platform.isIOS
+                    ? CupertinoButton(
+                        onPressed: actionYes,
+                        foregroundColor: brandColor,
+                        child: Text(labelYes),
+                      )
+                    : TextButton(
+                        onPressed: actionYes,
+                        style: TextButton.styleFrom(
                           foregroundColor: brandColor,
-                          child: Text(labelYes),
-                        )
-                      : TextButton(
-                          onPressed: actionYes,
-                          style: TextButton.styleFrom(
-                            foregroundColor: brandColor,
-                          ),
-                          child: Text(labelYes),
                         ),
-                ),
-              ],
-            ),
+                        child: Text(labelYes),
+                      ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ConfirmationDialogContent extends StatelessWidget {
+  const ConfirmationDialogContent({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.labelOk,
+    required this.actionOk,
+  });
+
+  final String title;
+  final String message;
+  final String labelOk;
+  final YesNoDialogAction? actionOk;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: space2, vertical: space1),
+      decoration: BoxDecoration(
+        color: isDark ? grey33 : white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(space2),
+          topRight: Radius.circular(space1),
+          bottomLeft: Radius.circular(space1),
+          bottomRight: Radius.circular(space2),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: space2,
+        children: [
+          Text(
+            title,
+            style: _titleTextStyle(context),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            message,
+            style: _messageTextStyle(context),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: Platform.isIOS
+                ? CupertinoButton.filled(
+                    onPressed: actionOk,
+                    child: Text(labelOk),
+                  )
+                : FilledButton(onPressed: actionOk, child: Text(labelOk)),
           ),
         ],
       ),

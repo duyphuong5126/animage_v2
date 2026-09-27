@@ -137,7 +137,7 @@ class _Body extends StatelessWidget {
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: space1),
-                      child: _TopInfoSection(state),
+                      child: _TopInfoSection(state: state, artist: artist),
                     ),
                   ),
 
@@ -338,7 +338,10 @@ class _Body extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    SizedBox(
+                    Container(
+                      margin: Platform.isIOS
+                          ? const EdgeInsets.only(left: space2)
+                          : null,
                       width: space3,
                       height: space3,
                       child: IconButton(
@@ -425,9 +428,10 @@ class _CoverFooter extends StatelessWidget {
 }
 
 class _TopInfoSection extends StatelessWidget {
-  const _TopInfoSection(this.state);
+  const _TopInfoSection({required this.state, this.artist});
 
   final PostDetailState state;
+  final Artist? artist;
 
   @override
   Widget build(BuildContext context) {
@@ -448,16 +452,13 @@ class _TopInfoSection extends StatelessWidget {
           );
         } else if (postDownloadState is DownloadFinishedState) {
           final resultText = postDownloadState.savedResult.isSuccess
-              ? 'Downloaded post ${state.post.id}'
+              ? 'Downloaded image of post ${state.post.id}.\n You can find it in the folder "${postDownloadState.savedPath}" of your Gallery app.'
               : 'Failed to download post ${state.post.id}';
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(resultText),
-                duration: Duration(seconds: 3),
-              ),
-            );
+          showConfirmationDialog(
+            context,
+            title: 'Downloaded Result',
+            message: resultText,
+          );
         }
       },
       builder: (context, downloadState) {
@@ -502,13 +503,19 @@ class _TopInfoSection extends StatelessWidget {
     return Platform.isIOS
         ? CupertinoButton(
             onPressed: () {
-              context.read<DownloadCubit>().downloadPost(state.post);
+              context.read<DownloadCubit>().downloadPost(
+                state.post,
+                artist: artist,
+              );
             },
             child: Icon(CupertinoIcons.cloud_download),
           )
         : IconButton(
             onPressed: () {
-              context.read<DownloadCubit>().downloadPost(state.post);
+              context.read<DownloadCubit>().downloadPost(
+                state.post,
+                artist: artist,
+              );
             },
             icon: Icon(Icons.cloud_download),
           );

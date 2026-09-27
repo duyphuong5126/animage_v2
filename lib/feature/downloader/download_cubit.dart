@@ -1,3 +1,4 @@
+import 'package:animage/domain/entity/artist.dart';
 import 'package:animage/domain/entity/post.dart';
 import 'package:animage/feature/downloader/post_download_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +13,7 @@ class DownloadCubit extends Cubit<DownloadState> {
 
   final FileHelper _fileHelper = FileHelper();
 
-  Future<void> downloadPost(Post post) async {
+  Future<void> downloadPost(Post post, {Artist? artist}) async {
     emit(
       state.copyWith(
         postDownloadingStatus: {
@@ -24,7 +25,10 @@ class DownloadCubit extends Cubit<DownloadState> {
 
     PostDownloadState downloadResult;
     try {
-      downloadResult = await _fileHelper.downloadFileOfPost(post);
+      downloadResult = await _fileHelper.downloadFileOfPost(
+        post,
+        album: artist?.name,
+      );
     } catch (e) {
       logE('Failed to load file of ${post.id} with error', error: e);
       downloadResult = PostDownloadState.finished(
