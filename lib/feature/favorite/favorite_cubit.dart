@@ -12,7 +12,10 @@ class FavoriteCubit extends Cubit<FavoriteState> {
 
   final PostLocalDataSource _localDataSource = PostLocalDataSource.instance;
 
-  void init() {
+  void init(GalleryMode mode) {
+    if (mode != state.galleryMode) {
+      emit(state.copyWith(galleryMode: mode));
+    }
     unawaited(_init());
   }
 

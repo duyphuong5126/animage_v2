@@ -38,3 +38,5 @@ const String postDetailsPage = 'post_details_page';
 const String viewOriginalPage = 'view_original_page';
 
 const loadingGifAsset = "assets/gifs/loading_cat_transparent.gif";
+
+const ipadIdentifier = 'ipad';

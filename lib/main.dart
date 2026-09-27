@@ -7,16 +7,28 @@ import 'package:animage/feature/home/home_page.dart';
 import 'package:animage/feature/photo_viewer/photo_view_page.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_page.dart';
+import 'package:animage/shared/widgets/device_info_provider.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'dimension.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await ArtistRepository.instance.loadArtists();
-  runApp(Platform.isIOS ? const AnimageIOSApp() : const AnimageAndroidApp());
+
+  final isTablet = await _isTablet();
+
+  runApp(
+    DeviceInfoProvider(
+      isTablet: isTablet,
+      child: Platform.isIOS ? const AnimageIOSApp() : const AnimageAndroidApp(),
+    ),
+  );
 }
 
 class AnimageAndroidApp extends StatelessWidget {
@@ -89,4 +101,20 @@ class AnimageIOSApp extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<bool> _isTablet() async {
+  final deviceInfo = DeviceInfoPlugin();
+  if (Platform.isIOS) {
+    final info = await deviceInfo.iosInfo;
+    return info.model.toLowerCase().contains(ipadIdentifier);
+  }
+
+  final displays = WidgetsBinding.instance.platformDispatcher.displays;
+  if (displays.isNotEmpty) {
+    final display = displays.first;
+    final screenSize = display.size / display.devicePixelRatio;
+    return screenSize.shortestSide >= tabletMinWidth;
+  }
+  return false;
 }

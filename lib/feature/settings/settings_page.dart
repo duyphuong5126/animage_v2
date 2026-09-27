@@ -35,7 +35,7 @@ class SettingsPage extends StatelessWidget {
       child: Platform.isIOS
           ? CupertinoPageScaffold(
               navigationBar: CupertinoNavigationBar(middle: Text('About')),
-              child: body,
+              child: SafeArea(child: body),
             )
           : Scaffold(
               appBar: AppBar(title: Text('About')),
@@ -231,36 +231,42 @@ class _ExternalInfoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     final textTheme = Theme.of(context).textTheme;
-    return InkWell(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: isDark ? grey33 : black,
-                  ),
+
+    final body = Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: isDark ? grey33 : black,
                 ),
-                const SizedBox(height: spaceQuarter),
-                Text(
-                  description,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: isDark ? grey33 : black,
-                  ),
+              ),
+              const SizedBox(height: spaceQuarter),
+              Text(
+                description,
+                style: textTheme.labelSmall?.copyWith(
+                  color: isDark ? grey33 : black,
                 ),
-                const SizedBox(height: spaceQuarter),
-              ],
-            ),
+              ),
+              const SizedBox(height: spaceQuarter),
+            ],
           ),
-          const SizedBox(width: spaceQuarter),
-          const Icon(Icons.open_in_new, size: space2),
-        ],
-      ),
+        ),
+        const SizedBox(width: spaceQuarter),
+        Icon(
+          Platform.isIOS
+              ? CupertinoIcons.arrow_up_right_square
+              : Icons.open_in_new,
+          size: space2,
+        ),
+      ],
     );
+    return Platform.isIOS
+        ? GestureDetector(onTap: onTap, child: body)
+        : InkWell(onTap: onTap, child: body);
   }
 }
 

@@ -16,6 +16,7 @@ import '../../dimension.dart';
 import '../../domain/entity/post.dart';
 import '../../shared/data/tag_selection.dart';
 import '../../shared/enum/gallery_mode.dart';
+import '../../shared/widgets/device_info_provider.dart';
 import '../../shared/widgets/gallery_list_item.dart';
 import '../../shared/widgets/gallery_mode_switch.dart';
 import '../../shared/widgets/list_loading_footer.dart';
@@ -28,8 +29,11 @@ class FavoritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isTablet = DeviceInfoProvider.of(context).isTablet;
+
     return BlocProvider(
-      create: (context) => FavoriteCubit()..init(),
+      create: (context) =>
+          FavoriteCubit()..init(isTablet ? GalleryMode.grid : GalleryMode.list),
       child: BlocListener<PostAdditionalInfoCubit, PostAdditionalInfo>(
         listenWhen: (prev, current) {
           return prev.favoriteIds != current.favoriteIds;
@@ -59,18 +63,19 @@ class FavoritePage extends StatelessWidget {
                               )
                             : null,
                       ),
-                Padding(
-                  padding: EdgeInsetsGeometry.symmetric(
-                    vertical: spaceHalf,
-                    horizontal: space2,
+                if (state.favoriteCount > 0 && !isTablet)
+                  Padding(
+                    padding: EdgeInsetsGeometry.symmetric(
+                      vertical: spaceHalf,
+                      horizontal: space2,
+                    ),
+                    child: GalleryModeSwitch(
+                      onModeSelected: (mode) {
+                        context.read<FavoriteCubit>().changeMode(mode);
+                      },
+                      galleryMode: state.galleryMode,
+                    ),
                   ),
-                  child: GalleryModeSwitch(
-                    onModeSelected: (mode) {
-                      context.read<FavoriteCubit>().changeMode(mode);
-                    },
-                    galleryMode: state.galleryMode,
-                  ),
-                ),
               ],
             );
 
@@ -124,67 +129,76 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
     final itemCount = list.length;
     final hasMoreData = widget.state.hasMoreData;
 
-    if (widget.state.galleryMode == GalleryMode.grid) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: space1),
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            SliverToBoxAdapter(child: SizedBox(height: space8)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth >= tabletMinWidth ? 4 : 2;
 
-            SliverGrid.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: space1,
-                crossAxisSpacing: space1,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                final post = list[index];
-                return GalleryListItem(
-                  data: post,
-                  itemAspectRatio: 1.0,
-                  onSelect: () {
-                    unawaited(_navigateToDetailPage(context, post: post));
+        if (widget.state.galleryMode == GalleryMode.grid) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: space1),
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                SliverToBoxAdapter(child: SizedBox(height: space8)),
+
+                SliverGrid.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: space1,
+                    crossAxisSpacing: space1,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: itemCount,
+                  itemBuilder: (context, index) {
+                    final post = list[index];
+                    return GalleryListItem(
+                      data: post,
+                      itemAspectRatio: 1.0,
+                      onSelect: () {
+                        unawaited(_navigateToDetailPage(context, post: post));
+                      },
+                    );
                   },
-                );
-              },
-            ),
-
-            if (hasMoreData)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: space2, bottom: space3),
-                  child: ListLoadingFooter(),
                 ),
-              ),
-          ],
-        ),
-      );
-    }
 
-    return ListView.separated(
-      controller: _scrollController,
-      padding: EdgeInsets.symmetric(horizontal: space1),
-      itemCount: itemCount + (hasMoreData ? 1 : 0) + 1,
-      separatorBuilder: (context, index) {
-        return SizedBox(height: space1);
-      },
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return SizedBox(height: space6);
+                if (hasMoreData)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: space2,
+                        bottom: space3,
+                      ),
+                      child: ListLoadingFooter(),
+                    ),
+                  ),
+              ],
+            ),
+          );
         }
-        if (index == itemCount + 1) {
-          return ListLoadingFooter();
-        }
-        final dataIndex = index - 1;
-        final post = list[dataIndex];
-        return GalleryListItem(
-          data: post,
-          itemAspectRatio: 1.5,
-          onSelect: () {
-            unawaited(_navigateToDetailPage(context, post: post));
+
+        return ListView.separated(
+          controller: _scrollController,
+          padding: EdgeInsets.symmetric(horizontal: space1),
+          itemCount: itemCount + (hasMoreData ? 1 : 0) + 1,
+          separatorBuilder: (context, index) {
+            return SizedBox(height: space1);
+          },
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return SizedBox(height: space6);
+            }
+            if (index == itemCount + 1) {
+              return ListLoadingFooter();
+            }
+            final dataIndex = index - 1;
+            final post = list[dataIndex];
+            return GalleryListItem(
+              data: post,
+              itemAspectRatio: 1.5,
+              onSelect: () {
+                unawaited(_navigateToDetailPage(context, post: post));
+              },
+            );
           },
         );
       },

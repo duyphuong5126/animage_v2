@@ -14,7 +14,14 @@ class GalleryCubit extends Cubit<GalleryState> {
 
   final PostRemoteDataSource _remoteDataSource = PostRemoteDataSourceImpl();
 
-  void init() {
+  void init(GalleryMode mode) {
+    if (mode != state.galleryMode) {
+      emit(state.copyWith(galleryMode: mode));
+    }
+    _init();
+  }
+
+  void _init() {
     unawaited(loadPage(1));
   }
 
@@ -72,7 +79,7 @@ class GalleryCubit extends Cubit<GalleryState> {
           tags: [...state.tags, normalizedTag],
         ),
       );
-      init();
+      _init();
     }
   }
 
@@ -98,7 +105,7 @@ class GalleryCubit extends Cubit<GalleryState> {
           tags: finalTags,
         ),
       );
-      init();
+      _init();
     }
   }
 
@@ -112,7 +119,7 @@ class GalleryCubit extends Cubit<GalleryState> {
         tags: [...state.tags.where((addedTag) => addedTag != normalizedTag)],
       ),
     );
-    init();
+    _init();
   }
 
   void setLevel(GalleryLevel level) {
@@ -124,11 +131,11 @@ class GalleryCubit extends Cubit<GalleryState> {
         galleryLevel: level,
       ),
     );
-    init();
+    _init();
   }
 
   void refresh() {
     emit(state.copyWith(pages: {}, loading: false, hasMoreData: false));
-    init();
+    _init();
   }
 }
