@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:animage/dimension.dart';
@@ -63,25 +64,12 @@ class _PhotoViewPageState extends State<PhotoViewPage>
             },
             itemBuilder: (context, int index) {
               String url = pages.elementAt(index).value;
-              return PhotoView(
-                enableRotation: false,
-                minScale: PhotoViewComputedScale.contained * 1.0,
-                imageProvider: CachedNetworkImageProvider(url),
-                scaleStateChangedCallback: (PhotoViewScaleState state) {
+              return _Page(
+                url: url,
+                onScaleStateChanged: (PhotoViewScaleState state) {
                   setState(() {
                     _isSwipeEnabled = state.index == 0;
                   });
-                },
-                loadingBuilder: (context, event) {
-                  return Center(
-                    child: SizedBox(
-                      width: space4,
-                      height: space4,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(brandColor),
-                      ),
-                    ),
-                  );
                 },
                 onTapUp: (context, details, value) {
                   switch (_animationController.status) {
@@ -149,7 +137,109 @@ class _PhotoViewPageState extends State<PhotoViewPage>
 
   @override
   void dispose() {
-    super.dispose();
     _animationController.dispose();
+    super.dispose();
+  }
+}
+
+class _Page extends StatefulWidget {
+  const _Page({
+    required this.url,
+    required this.onScaleStateChanged,
+    required this.onTapUp,
+  });
+
+  final String url;
+  final Function(PhotoViewScaleState state) onScaleStateChanged;
+  final PhotoViewImageTapUpCallback onTapUp;
+
+  @override
+  State<_Page> createState() => _PageState();
+}
+
+class _PageState extends State<_Page> {
+  Key _photoViewKey = UniqueKey();
+  late CachedNetworkImageProvider _imageProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _initImageProvider();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_imageProvider.evict());
+    super.dispose();
+  }
+
+  void _initImageProvider() {
+    _imageProvider = CachedNetworkImageProvider(widget.url);
+  }
+
+  Future<void> _handleRetry() async {
+    await _imageProvider.evict();
+
+    setState(() {
+      _initImageProvider();
+      _photoViewKey = UniqueKey();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PhotoView(
+      key: _photoViewKey,
+      enableRotation: false,
+      minScale: PhotoViewComputedScale.contained * 1.0,
+      imageProvider: _imageProvider,
+      scaleStateChangedCallback: widget.onScaleStateChanged,
+      loadingBuilder: (context, event) {
+        final cumulativeBytesLoaded = event?.cumulativeBytesLoaded.toDouble();
+        final expectedTotalBytes = event?.expectedTotalBytes;
+        final value =
+            cumulativeBytesLoaded != null && expectedTotalBytes != null
+            ? cumulativeBytesLoaded / expectedTotalBytes
+            : null;
+        return Center(
+          child: Platform.isIOS
+              ? value != null
+                    ? CupertinoActivityIndicator.partiallyRevealed(
+                        progress: value,
+                        color: brandColor,
+                        radius: space2,
+                      )
+                    : CupertinoActivityIndicator(
+                        color: brandColor,
+                        radius: space2,
+                      )
+              : SizedBox(
+                  width: space4,
+                  height: space4,
+                  child: CircularProgressIndicator(
+                    value: value,
+                    valueColor: AlwaysStoppedAnimation<Color>(brandColor),
+                  ),
+                ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        onRetry() {
+          unawaited(_handleRetry());
+        }
+
+        return Platform.isIOS
+            ? Center(
+                child: CupertinoButton(
+                  onPressed: onRetry,
+                  child: Text('Retry'),
+                ),
+              )
+            : Center(
+                child: TextButton(onPressed: onRetry, child: Text('Retry')),
+              );
+      },
+      onTapUp: widget.onTapUp,
+    );
   }
 }
