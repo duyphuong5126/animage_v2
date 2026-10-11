@@ -44,6 +44,13 @@ class _GalleryListItemState extends State<GalleryListItem> {
         final artist = additionalInfo.artistOfPost[data.id];
         final isFavorite = additionalInfo.favoriteIds.contains(data.id);
 
+        final width = data.width;
+        final height = data.height;
+
+        final ratio = width != null && height != null
+            ? '${width}x$height'
+            : null;
+
         return GestureDetector(
           onTap: widget.onSelect,
           child: ClipRRect(
@@ -115,6 +122,30 @@ class _GalleryListItemState extends State<GalleryListItem> {
                         ],
                       ),
                     ),
+
+                    if (ratio != null)
+                      Positioned(
+                        bottom: space1,
+                        right: space2,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: black150,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(spaceHalf),
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: spaceQuarter,
+                            horizontal: spaceHalf,
+                          ),
+                          child: Text(
+                            ratio,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: _ratioTextStyle(context),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -156,5 +187,12 @@ TextStyle? _artistTextStyle(BuildContext context) {
   return (Platform.isIOS
           ? CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle
           : Theme.of(context).textTheme.headlineMedium)
+      ?.copyWith(color: white);
+}
+
+TextStyle? _ratioTextStyle(BuildContext context) {
+  return (Platform.isIOS
+          ? CupertinoTheme.of(context).textTheme.tabLabelTextStyle
+          : Theme.of(context).textTheme.labelLarge)
       ?.copyWith(color: white);
 }

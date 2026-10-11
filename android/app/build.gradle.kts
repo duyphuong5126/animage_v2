@@ -39,6 +39,13 @@ android {
         debug {
             applicationIdSuffix = ".debug"
         }
+
+        create("staging") {
+            initWith(getByName("release"))
+            isMinifyEnabled = false
+            isShrinkResources = false
+            applicationIdSuffix = ".staging"
+        }
     }
 }
 

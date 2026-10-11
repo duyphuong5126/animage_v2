@@ -11,8 +11,9 @@ const Color transparency = Color.fromARGB(0, 0, 0, 0);
 
 const Color white = Color.fromARGB(255, 255, 255, 255);
 const Color black = Color.fromARGB(255, 0, 0, 0);
-const Color black200 = Color.fromARGB(200, 0, 0, 0);
 const Color black222 = Color.fromARGB(222, 0, 0, 0);
+const Color black200 = Color.fromARGB(200, 0, 0, 0);
+const Color black150 = Color.fromARGB(150, 0, 0, 0);
 const Color black100 = Color.fromARGB(100, 0, 0, 0);
 
 const grey217 = Color.fromRGBO(217, 217, 217, 1.0);

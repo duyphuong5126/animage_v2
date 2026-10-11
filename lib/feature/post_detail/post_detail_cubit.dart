@@ -21,12 +21,18 @@ class PostDetailCubit extends Cubit<PostDetailState> {
     }
     emit(state.copyWith(loadingChildren: true));
     try {
+      final parentId = state.post.id;
       final children = await _remoteDataSource.searchPostsByTag(
-        ['parent:${state.post.id}'],
+        ['parent:$parentId'],
         1,
         GalleryLevel.free,
       );
-      emit(state.copyWith(children: children, loadingChildren: false));
+      emit(
+        state.copyWith(
+          children: children.where((child) => child.id != parentId).toList(),
+          loadingChildren: false,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(children: [], loadingChildren: false));
     }

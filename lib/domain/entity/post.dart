@@ -113,6 +113,18 @@ extension PostEntityExtension on Post {
     return 'File size: ${_formatFileSize(size)}';
   }
 
+  String get imageSizeLabel {
+    final width = this.width;
+    final height = this.height;
+
+    final ratio = width != null && height != null ? '${width}x$height' : null;
+    if (ratio == null) {
+      return 'Image size: Unknown';
+    }
+
+    return 'Image size: $ratio';
+  }
+
   String _formatFileSize(int bytes, {int decimals = 2}) {
     if (bytes <= 0) return '0 B';
 

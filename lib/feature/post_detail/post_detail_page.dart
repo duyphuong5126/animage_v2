@@ -223,6 +223,19 @@ class _Body extends StatelessWidget {
 
                   SliverToBoxAdapter(child: SizedBox(height: spaceOneHalf)),
 
+                  // Image size
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: space1),
+                      child: Text(
+                        post.imageSizeLabel,
+                        style: _tagTitleTextStyle(context),
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(child: SizedBox(height: spaceOneHalf)),
+
                   // Created at
                   SliverToBoxAdapter(
                     child: Padding(
