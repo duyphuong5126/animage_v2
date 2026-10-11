@@ -48,7 +48,7 @@ class _GalleryListItemState extends State<GalleryListItem> {
         final height = data.height;
 
         final ratio = width != null && height != null
-            ? '${width}x$height'
+            ? '$width×$height'
             : null;
 
         return GestureDetector(

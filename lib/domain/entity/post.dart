@@ -117,7 +117,7 @@ extension PostEntityExtension on Post {
     final width = this.width;
     final height = this.height;
 
-    final ratio = width != null && height != null ? '${width}x$height' : null;
+    final ratio = width != null && height != null ? '$width×$height' : null;
     if (ratio == null) {
       return 'Image size: Unknown';
     }
