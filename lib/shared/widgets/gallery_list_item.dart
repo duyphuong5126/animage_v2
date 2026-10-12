@@ -4,6 +4,8 @@ import 'package:animage/constant.dart';
 import 'package:animage/dimension.dart';
 import 'package:animage/domain/entity/artist.dart';
 import 'package:animage/domain/entity/post.dart';
+import 'package:animage/feature/downloader/download_cubit.dart';
+import 'package:animage/feature/downloader/download_state.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,6 +13,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../feature/downloader/post_download_state.dart';
 import '../extension/context_extension.dart';
 import 'favorite_checkbox.dart';
 
@@ -47,9 +50,7 @@ class _GalleryListItemState extends State<GalleryListItem> {
         final width = data.width;
         final height = data.height;
 
-        final ratio = width != null && height != null
-            ? '$width×$height'
-            : null;
+        final ratio = width != null && height != null ? '$width×$height' : null;
 
         return GestureDetector(
           onTap: widget.onSelect,
@@ -126,24 +127,56 @@ class _GalleryListItemState extends State<GalleryListItem> {
                     if (ratio != null)
                       Positioned(
                         bottom: space1,
-                        right: space2,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: black150,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(spaceHalf),
+                        right: space1,
+                        left: space2,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: black150,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(spaceHalf),
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: spaceQuarter,
+                                horizontal: spaceHalf,
+                              ),
+                              child: Text(
+                                ratio,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: _ratioTextStyle(context),
+                              ),
                             ),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: spaceQuarter,
-                            horizontal: spaceHalf,
-                          ),
-                          child: Text(
-                            ratio,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: _ratioTextStyle(context),
-                          ),
+                            BlocBuilder<DownloadCubit, DownloadState>(
+                              builder: (context, downloadState) {
+                                final postDownloadState = downloadState
+                                    .postDownloadingStatus[data.id];
+                                bool isDownloading =
+                                    postDownloadState is DownloadingState;
+                                return Visibility(
+                                  maintainSize: true,
+                                  maintainAnimation: true,
+                                  maintainState: true,
+                                  visible: isDownloading,
+                                  child: Platform.isIOS
+                                      ? CupertinoActivityIndicator(
+                                          radius: space2,
+                                          color: brandColor,
+                                        )
+                                      : SizedBox(
+                                          width: space2,
+                                          height: space2,
+                                          child: CircularProgressIndicator(
+                                            color: brandColor,
+                                          ),
+                                        ),
+                                );
+                              },
+                            ),
+                          ],
                         ),
                       ),
                   ],
