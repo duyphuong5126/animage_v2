@@ -16,6 +16,7 @@ import 'package:animage/shared/widgets/empty_page_content.dart';
 import 'package:animage/shared/widgets/gallery_list_item.dart';
 import 'package:animage/shared/widgets/gallery_mode_switch.dart';
 import 'package:animage/shared/widgets/list_loading_footer.dart';
+import 'package:animage/shared/widgets/loading_page_content.dart';
 import 'package:animage/shared/widgets/removable_chip.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -204,6 +205,10 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth >= tabletMinWidth ? 4 : 2;
+
+        if (itemCount == 0 && widget.state.loading) {
+          return const LoadingPageContent();
+        }
 
         if (isGrid || Platform.isIOS) {
           listWidget = Padding(
