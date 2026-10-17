@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animage/data/local/selected_tag_local_data_source.dart';
 import 'package:animage/domain/entity/gallery_level.dart';
 import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
@@ -30,6 +31,15 @@ class GalleryCubit extends Cubit<GalleryState> {
     final galleryLevel = await SharedPreferencesHelper.getGalleryLevel();
     if (galleryLevel != null) {
       emit(state.copyWith(galleryLevel: galleryLevel));
+    }
+    try {
+      final selectedTags = await SelectedTagLocalDataSource.instance
+          .getSelectedTags();
+      if (selectedTags.isNotEmpty) {
+        emit(state.copyWith(tags: selectedTags));
+      }
+    } catch (e) {
+      logE('Failed to get selected tags', error: e);
     }
     _resetList();
   }
@@ -92,6 +102,7 @@ class GalleryCubit extends Cubit<GalleryState> {
           tags: [...state.tags, normalizedTag],
         ),
       );
+      unawaited(SelectedTagLocalDataSource.instance.addTag(normalizedTag));
       _resetList();
     }
   }
@@ -108,6 +119,7 @@ class GalleryCubit extends Cubit<GalleryState> {
       if (!finalTags.contains(tag)) {
         hasNewTag = true;
         finalTags.add(tag);
+        unawaited(SelectedTagLocalDataSource.instance.addTag(tag));
       }
     }
     if (hasNewTag) {
@@ -125,6 +137,7 @@ class GalleryCubit extends Cubit<GalleryState> {
 
   void removeTag(String tag) {
     final normalizedTag = tag.trim().toLowerCase();
+    unawaited(SelectedTagLocalDataSource.instance.removeTag(normalizedTag));
     emit(
       state.copyWith(
         pages: {},

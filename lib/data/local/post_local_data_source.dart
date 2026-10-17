@@ -6,7 +6,7 @@ import 'package:drift/drift.dart';
 
 class PostLocalDataSource {
   PostLocalDataSource._() {
-    _database = AnimageDatabase();
+    _database = AnimageDatabase.instance;
   }
 
   static PostLocalDataSource instance = PostLocalDataSource._();
