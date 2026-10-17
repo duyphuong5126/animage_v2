@@ -83,6 +83,7 @@ class _TagItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      color: transparency,
       padding: const EdgeInsets.symmetric(horizontal: space2, vertical: space1),
       child: Column(
         spacing: space1,
