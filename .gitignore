@@ -58,3 +58,8 @@ app.*.map.json
 /lib/feature/post_additional_info/post_additional_info.freezed.dart
 /lib/feature/favorite/favorite_state.freezed.dart
 /lib/data/local/animage_database.g.dart
+/lib/domain/entity/tag.freezed.dart
+/lib/domain/entity/tag.g.dart
+/lib/domain/entity/tag_list_change_log.freezed.dart
+/lib/domain/entity/tag_list_change_log.g.dart
+/lib/feature/tag/tag_list_state.freezed.dart

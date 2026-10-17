@@ -6,7 +6,8 @@ import 'package:animage/dimension.dart';
 import 'package:animage/domain/entity/gallery_level.dart';
 import 'package:animage/domain/entity/post.dart';
 import 'package:animage/feature/gallery/gallery_cubit.dart';
-import 'package:animage/feature/tag_selection/tag_selection_cubit.dart';
+import 'package:animage/feature/tag/tag_list.dart';
+import 'package:animage/feature/tag/tag_selection_cubit.dart';
 import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
 import 'package:animage/feature/gallery/state/page_state.dart';
@@ -145,6 +146,15 @@ class GalleryPage extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (state.unprocessedQuery.isNotEmpty)
+                  TagList(
+                    tagQuery: state.unprocessedQuery,
+                    onSelectTag: (tag) {
+                      final cubit = context.read<GalleryCubit>();
+                      cubit.updateUnprocessedQuery('');
+                      cubit.search(tag.name);
+                    },
+                  ),
               ],
             );
             return Platform.isIOS
@@ -393,7 +403,14 @@ class _SearchViewState extends State<_SearchView> {
   final TextEditingController _editingController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _editingController.addListener(_onTextChanged);
+  }
+
+  @override
   void dispose() {
+    _editingController.removeListener(_onTextChanged);
     _editingController.dispose();
     super.dispose();
   }
@@ -409,69 +426,85 @@ class _SearchViewState extends State<_SearchView> {
       height: 1.2, // Giúp kiểm soát chính xác chiều cao của text dòng đơn
     );
 
-    return SizedBox(
-      height: space6, // = 48.0
-      child: Platform.isIOS
-          ? CupertinoTextField(
-              controller: _editingController,
-              style: textStyle,
-              textAlignVertical: TextAlignVertical.center,
-              onSubmitted: (query) {
-                context.read<GalleryCubit>().search(query);
-                _editingController.clear();
-              },
-              textInputAction: TextInputAction.search,
-              placeholder: 'Search',
-              placeholderStyle: textStyle.copyWith(color: grey117),
-              padding: EdgeInsets.symmetric(
-                horizontal: space2, // = 16.0 (khoảng cách lề trái phải rất đẹp)
-                vertical: spaceOneHalf,
-              ),
-              decoration: BoxDecoration(
-                color: isDark ? white : grey217,
-                border: Border.fromBorderSide(BorderSide.none),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(
-                    Platform.isIOS ? iosTextFieldRadius : space1,
-                  ), // space1 = 8.0
-                ),
-              ),
-            )
-          : TextField(
-              controller: _editingController,
-              style: textStyle,
-              textAlignVertical: TextAlignVertical.center,
-              // 2. Ép nội dung căn giữa theo chiều dọc
-              onSubmitted: (query) {
-                context.read<GalleryCubit>().search(query);
-                _editingController.clear();
-              },
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: isDark ? white : grey217,
-                hintText: 'Search',
-                hintStyle: textStyle.copyWith(color: grey117),
+    onSubmitted(String query) {
+      final cubit = context.read<GalleryCubit>();
+      cubit.updateUnprocessedQuery('');
+      cubit.search(query);
+      _editingController.clear();
+    }
 
-                isDense: true,
-                // 3. Sử dụng padding vừa phải cho chiều cao 48.0
-                // vertical: 12.0 giúp cân bằng khoảng trống trên/dưới mà không làm vỡ layout
-                contentPadding: EdgeInsets.symmetric(
+    return BlocListener<GalleryCubit, GalleryState>(
+      listener: (context, state) {
+        if (state.unprocessedQuery.isEmpty) {
+          _editingController.clear();
+        }
+      },
+      child: SizedBox(
+        height: space6, // = 48.0
+        child: Platform.isIOS
+            ? CupertinoTextField(
+                controller: _editingController,
+                style: textStyle,
+                textAlignVertical: TextAlignVertical.center,
+                onSubmitted: onSubmitted,
+                textInputAction: TextInputAction.search,
+                placeholder: 'Search',
+                placeholderStyle: textStyle.copyWith(color: grey117),
+                padding: EdgeInsets.symmetric(
                   horizontal:
                       space2, // = 16.0 (khoảng cách lề trái phải rất đẹp)
                   vertical: spaceOneHalf,
                 ),
-
-                border: OutlineInputBorder(
+                decoration: BoxDecoration(
+                  color: isDark ? white : grey217,
+                  border: Border.fromBorderSide(BorderSide.none),
                   borderRadius: BorderRadius.all(
                     Radius.circular(
                       Platform.isIOS ? iosTextFieldRadius : space1,
                     ), // space1 = 8.0
                   ),
-                  borderSide: BorderSide.none,
+                ),
+              )
+            : TextField(
+                controller: _editingController,
+                style: textStyle,
+                textAlignVertical: TextAlignVertical.center,
+                // 2. Ép nội dung căn giữa theo chiều dọc
+                onSubmitted: onSubmitted,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isDark ? white : grey217,
+                  hintText: 'Search',
+                  hintStyle: textStyle.copyWith(color: grey117),
+
+                  isDense: true,
+                  // 3. Sử dụng padding vừa phải cho chiều cao 48.0
+                  // vertical: 12.0 giúp cân bằng khoảng trống trên/dưới mà không làm vỡ layout
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal:
+                        space2, // = 16.0 (khoảng cách lề trái phải rất đẹp)
+                    vertical: spaceOneHalf,
+                  ),
+
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(
+                        Platform.isIOS ? iosTextFieldRadius : space1,
+                      ), // space1 = 8.0
+                    ),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
+      ),
     );
+  }
+
+  void _onTextChanged() {
+    final text = _editingController.text;
+    if (text.isNotEmpty) {
+      context.read<GalleryCubit>().updateUnprocessedQuery(text);
+    }
   }
 }

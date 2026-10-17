@@ -12,6 +12,7 @@ import 'package:animage/feature/downloader/post_download_state.dart';
 import 'package:animage/feature/post_additional_info/post_additional_info_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_cubit.dart';
 import 'package:animage/feature/post_detail/post_detail_state.dart';
+import 'package:animage/shared/helper/formatter.dart';
 import 'package:animage/shared/widgets/dialog.dart';
 import 'package:animage/shared/widgets/favorite_checkbox.dart';
 import 'package:animage/shared/widgets/gallery_list_item.dart';
@@ -70,6 +71,8 @@ class _Body extends StatelessWidget {
         viewerList.add(child);
       }
     }
+
+    final countForTags = state.countForTags;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -170,7 +173,7 @@ class _Body extends StatelessWidget {
                                 );
                               },
                               child: RemovableChip(
-                                label: tag,
+                                label: _tagLabel(tag, countForTags[tag]),
                                 bgColor: brandColor,
                                 textColor: white,
                               ),
@@ -377,6 +380,12 @@ class _Body extends StatelessWidget {
         },
       ),
     );
+  }
+
+  String _tagLabel(String tagName, int? count) {
+    return count != null
+        ? '$tagName (${postCountFormat.format(count)})'
+        : tagName;
   }
 }
 

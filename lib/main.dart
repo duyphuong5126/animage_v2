@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animage/constant.dart';
 import 'package:animage/data/repository/artist_repository.dart';
+import 'package:animage/data/repository/tag_repository.dart';
 import 'package:animage/feature/downloader/download_cubit.dart';
 import 'package:animage/feature/home/home_page.dart';
 import 'package:animage/feature/photo_viewer/photo_view_page.dart';
@@ -20,6 +21,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await ArtistRepository.instance.loadArtists();
+
+  await TagRepository.instance.loadTags();
 
   final isTablet = await _isTablet();
 

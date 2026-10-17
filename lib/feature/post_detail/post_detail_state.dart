@@ -9,5 +9,6 @@ abstract class PostDetailState with _$PostDetailState {
     required Post post,
     @Default([]) List<Post> children,
     @Default(false) bool loadingChildren,
+    @Default({}) Map<String, int> countForTags,
   }) = _PostDetailState;
 }

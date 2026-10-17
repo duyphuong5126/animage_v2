@@ -9,20 +9,18 @@ import 'package:animage/shared/widgets/empty_page_content.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../../constant.dart';
 import '../../dimension.dart';
 import '../../domain/entity/post.dart';
 import '../../shared/data/tag_selection.dart';
 import '../../shared/enum/gallery_mode.dart';
+import '../../shared/helper/formatter.dart';
 import '../../shared/widgets/device_info_provider.dart';
 import '../../shared/widgets/gallery_list_item.dart';
 import '../../shared/widgets/gallery_mode_switch.dart';
 import '../../shared/widgets/list_loading_footer.dart';
-import '../tag_selection/tag_selection_cubit.dart';
-
-final _favoriteCountFormat = NumberFormat.decimalPattern();
+import '../tag/tag_selection_cubit.dart';
 
 class FavoritePage extends StatelessWidget {
   const FavoritePage({super.key});
@@ -80,7 +78,7 @@ class FavoritePage extends StatelessWidget {
             );
 
             final titleText = state.favoriteCount > 0
-                ? 'Favorites (${_favoriteCountFormat.format(state.favoriteCount)})'
+                ? 'Favorites (${postCountFormat.format(state.favoriteCount)})'
                 : 'Favorites';
             final title = Text(titleText);
             return Platform.isIOS

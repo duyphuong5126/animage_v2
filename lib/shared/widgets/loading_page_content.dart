@@ -41,13 +41,16 @@ class _LoadingPageContentState extends State<LoadingPageContent>
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Gif(
-              image: AssetImage(loadingGifAsset),
-              height: space10,
-              width: space10,
-              autostart: Autostart.loop,
-              duration: Duration(seconds: 4),
-              controller: _controller,
+            Container(
+              color: white,
+              child: Gif(
+                image: AssetImage(loadingGifAsset),
+                height: space10,
+                width: space10,
+                autostart: Autostart.loop,
+                duration: Duration(seconds: 4),
+                controller: _controller,
+              ),
             ),
             Text("Loading...", style: _loadingTextStyle(context)),
           ],

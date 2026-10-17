@@ -138,4 +138,8 @@ class GalleryCubit extends Cubit<GalleryState> {
     emit(state.copyWith(pages: {}, loading: false, hasMoreData: false));
     _init();
   }
+
+  void updateUnprocessedQuery(String query) {
+    emit(state.copyWith(unprocessedQuery: query));
+  }
 }

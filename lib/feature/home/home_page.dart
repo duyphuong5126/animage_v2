@@ -5,7 +5,7 @@ import 'package:animage/dimension.dart';
 import 'package:animage/feature/favorite/favorite_page.dart';
 import 'package:animage/feature/gallery/gallery_page.dart';
 import 'package:animage/feature/settings/settings_page.dart';
-import 'package:animage/feature/tag_selection/tag_selection_cubit.dart';
+import 'package:animage/feature/tag/tag_selection_cubit.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

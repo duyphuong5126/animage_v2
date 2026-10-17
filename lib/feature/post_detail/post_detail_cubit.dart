@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:animage/data/remote/post_remote_data_source.dart';
+import 'package:animage/data/repository/tag_repository.dart';
 import 'package:animage/domain/entity/gallery_level.dart';
 import 'package:animage/domain/entity/post.dart';
 import 'package:animage/feature/post_detail/post_detail_state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PostDetailCubit extends Cubit<PostDetailState> {
@@ -16,6 +18,12 @@ class PostDetailCubit extends Cubit<PostDetailState> {
   }
 
   Future<void> _loadPostDetails() async {
+    final countForTags = await compute(TagRepository.getPostsCountForTags, {
+      tagNamesKey: state.post.tagList,
+      availableTagsKey: TagRepository.tags,
+    });
+    emit(state.copyWith(countForTags: countForTags));
+
     if (state.post.hasChildren != true) {
       return;
     }

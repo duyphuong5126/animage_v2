@@ -17,6 +17,7 @@ abstract class GalleryState with _$GalleryState {
     @Default(GalleryLevel.safe) GalleryLevel galleryLevel,
     @Default(GalleryMode.list) GalleryMode galleryMode,
     @Default([]) List<String> tags,
+    @Default('') String unprocessedQuery,
   }) = _GalleryState;
 }
 
