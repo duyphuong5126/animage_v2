@@ -4,6 +4,7 @@ import 'package:animage/domain/entity/gallery_level.dart';
 import 'package:animage/shared/enum/gallery_mode.dart';
 import 'package:animage/feature/gallery/state/gallery_state.dart';
 import 'package:animage/feature/gallery/state/page_state.dart';
+import 'package:animage/shared/helper/shared_preferences_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/remote/post_remote_data_source.dart';
@@ -18,10 +19,22 @@ class GalleryCubit extends Cubit<GalleryState> {
     if (mode != state.galleryMode) {
       emit(state.copyWith(galleryMode: mode));
     }
-    _init();
+    unawaited(_init());
   }
 
-  void _init() {
+  Future<void> _init() async {
+    final galleryMode = await SharedPreferencesHelper.getGalleryMode();
+    if (galleryMode != null) {
+      emit(state.copyWith(galleryMode: galleryMode));
+    }
+    final galleryLevel = await SharedPreferencesHelper.getGalleryLevel();
+    if (galleryLevel != null) {
+      emit(state.copyWith(galleryLevel: galleryLevel));
+    }
+    _resetList();
+  }
+
+  void _resetList() {
     unawaited(loadPage(1));
   }
 
@@ -79,12 +92,13 @@ class GalleryCubit extends Cubit<GalleryState> {
           tags: [...state.tags, normalizedTag],
         ),
       );
-      _init();
+      _resetList();
     }
   }
 
   void changeMode(GalleryMode mode) {
     emit(state.copyWith(galleryMode: mode));
+    unawaited(SharedPreferencesHelper.setGalleryModeValue(mode));
   }
 
   void addTags(List<String> tags) {
@@ -105,7 +119,7 @@ class GalleryCubit extends Cubit<GalleryState> {
           tags: finalTags,
         ),
       );
-      _init();
+      _resetList();
     }
   }
 
@@ -119,10 +133,11 @@ class GalleryCubit extends Cubit<GalleryState> {
         tags: [...state.tags.where((addedTag) => addedTag != normalizedTag)],
       ),
     );
-    _init();
+    _resetList();
   }
 
   void setLevel(GalleryLevel level) {
+    unawaited(SharedPreferencesHelper.setGalleryLevelValue(level));
     emit(
       state.copyWith(
         pages: {},
@@ -131,12 +146,12 @@ class GalleryCubit extends Cubit<GalleryState> {
         galleryLevel: level,
       ),
     );
-    _init();
+    _resetList();
   }
 
   void refresh() {
     emit(state.copyWith(pages: {}, loading: false, hasMoreData: false));
-    _init();
+    _resetList();
   }
 
   void updateUnprocessedQuery(String query) {
