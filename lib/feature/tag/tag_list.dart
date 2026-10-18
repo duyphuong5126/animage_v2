@@ -49,6 +49,7 @@ class _TagListState extends State<TagList> {
             color: context.themedValue(white, black),
             child: ListView.separated(
               shrinkWrap: true,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               itemBuilder: (context, index) {
                 final tag = state.tags[index];
                 return GestureDetector(
