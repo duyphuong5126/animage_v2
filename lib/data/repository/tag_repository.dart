@@ -19,9 +19,9 @@ class TagRepository {
 
   static TagRepository instance = TagRepository._();
 
-  static final Set<Tag> _tags = {};
+  static final Map<int, Tag> _tags = {};
 
-  static Set<Tag> get tags => Set.of(_tags);
+  static Set<Tag> get tags => Set.of(_tags.values);
 
   static const String tag = 'TagRepository';
 
@@ -33,14 +33,14 @@ class TagRepository {
       );
 
       final List<dynamic> data = jsonDecode(jsonString);
-      logD('Loaded ${data.length} tags');
+      logD('Loaded ${data.length} tags', tag: tag);
       for (final tagData in data) {
         final Map<String, dynamic> jsonMap = tagData as Map<String, dynamic>;
         final tag = Tag.fromJson(jsonMap);
-        _tags.add(tag);
+        _tags[tag.id] = tag;
       }
     } catch (e) {
-      logE('Failed to load tags with error', error: e);
+      logE('Failed to load tags with error', error: e, tag: tag);
     }
     _syncWithRemoteData().ignore();
   }
@@ -51,14 +51,14 @@ class TagRepository {
       Response response = await get(Uri.parse(url)).timeout(_requestTimeOut);
 
       final List<dynamic> data = jsonDecode(response.body);
-      logD('Synced ${data.length} tags');
+      logD('Synced ${data.length} tags', tag: tag);
       for (final tagData in data) {
         try {
           final Map<String, dynamic> jsonMap = tagData as Map<String, dynamic>;
           final tag = Tag.fromJson(jsonMap);
-          _tags.add(tag);
+          _tags[tag.id] = tag;
         } catch (e) {
-          logE('Failed to parse tag data $tagData', error: e);
+          logE('Failed to parse tag data $tagData', error: e, tag: tag);
         }
       }
       Log.d(

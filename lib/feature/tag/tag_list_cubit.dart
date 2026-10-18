@@ -9,7 +9,7 @@ class TagListCubit extends Cubit<TagListState> {
   new() : super(const TagListState());
 
   Future<void> updateQuery(String query) async {
-    logD('updateQuery $query', 'TagFilter');
+    logD('updateQuery $query', tag: 'TagFilter');
     final matchedTags = await compute(TagRepository.getMatchedTags, {
       tagQueryKey: query,
       availableTagsKey: TagRepository.tags,

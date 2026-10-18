@@ -11,7 +11,7 @@ class Log {
 }
 
 extension LogExtension on Object {
-  void logD(String message, [String? tag]) {
+  void logD(String message, {String? tag}) {
     if (kDebugMode) {
       final tagName = tag ?? runtimeType.toString();
       log('$tagName: $message');

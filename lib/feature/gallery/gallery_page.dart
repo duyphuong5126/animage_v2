@@ -505,8 +505,6 @@ class _SearchViewState extends State<_SearchView> {
 
   void _onTextChanged() {
     final text = _editingController.text;
-    if (text.isNotEmpty) {
-      context.read<GalleryCubit>().updateUnprocessedQuery(text);
-    }
+    context.read<GalleryCubit>().updateUnprocessedQuery(text);
   }
 }

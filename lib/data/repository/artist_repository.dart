@@ -24,6 +24,8 @@ class ArtistRepository {
 
   Map<String, Artist> get artists => Map.unmodifiable(_artists);
 
+  static const String tag = 'ArtistRepository';
+
   Future<void> loadArtists() async {
     _artists.clear();
     try {
@@ -32,20 +34,21 @@ class ArtistRepository {
       );
 
       final List<dynamic> data = jsonDecode(jsonString);
-      logD('Loaded ${data.length} artists');
+      logD('Loaded ${data.length} artists', tag: tag);
       for (final artistData in data) {
         final Map<String, dynamic> jsonMap = artistData as Map<String, dynamic>;
         final artist = Artist.fromJson(jsonMap);
         if (_artists.containsKey(artist.name)) {
           logD(
             'Duplicated artist name ${artist.name}\n- $artist\n- ${_artists[artist.name]}',
+            tag: tag,
           );
         } else {
           _artists[artist.name] = artist;
         }
       }
     } catch (e) {
-      logE('Failed to load artists with error', error: e);
+      logE('Failed to load artists with error', error: e, tag: tag);
     }
     _syncWithRemoteData().ignore();
   }
@@ -56,7 +59,7 @@ class ArtistRepository {
       Response response = await get(Uri.parse(url)).timeout(_requestTimeOut);
 
       final List<dynamic> data = jsonDecode(response.body);
-      logD('Synced ${data.length} artists');
+      logD('Synced ${data.length} artists', tag: tag);
       for (final artistData in data) {
         try {
           final Map<String, dynamic> jsonMap =
@@ -64,14 +67,18 @@ class ArtistRepository {
           final artist = Artist.fromJson(jsonMap);
           _artists[artist.name] = artist;
         } catch (e) {
-          logE('Failed to parse artist data $artistData', error: e);
+          logE('Failed to parse artist data $artistData', error: e, tag: tag);
         }
       }
       logD(
         '\n-------------------\nGET $url\nResult: ${response.statusCode} - ${data.map((e) => e['name'])}\n-------------------',
+        tag: tag,
       );
     } catch (e) {
-      logE('\n-------------------\nGET $url\nError: $e\n-------------------');
+      logE(
+        '\n-------------------\nGET $url\nError: $e\n-------------------',
+        tag: tag,
+      );
       rethrow;
     }
   }
@@ -87,7 +94,7 @@ class ArtistRepository {
 
     for (final post in posts) {
       if (artists.containsKey(post.id)) {
-        Log.d('Artist', 'Loaded artist of post ${post.id}');
+        Log.d(tag, 'Loaded artist of post ${post.id}');
       } else {
         Artist? artist;
         final tagList = post.tagList;
