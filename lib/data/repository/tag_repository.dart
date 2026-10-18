@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:animage/constant.dart';
 import 'package:animage/domain/entity/tag.dart';
+import 'package:animage/domain/entity/tag_list_change_log.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
@@ -25,20 +26,30 @@ class TagRepository {
 
   static const String tag = 'TagRepository';
 
+  static TagListChangeLog? _changeLog;
+
+  static TagListChangeLog? get changeLog => _changeLog;
+
   Future<void> loadTags() async {
     _tags.clear();
     try {
-      final String jsonString = await rootBundle.loadString(
+      final String tagsAssetString = await rootBundle.loadString(
         '$tagAssetPath/tag.json',
       );
 
-      final List<dynamic> data = jsonDecode(jsonString);
+      final List<dynamic> data = jsonDecode(tagsAssetString);
       logD('Loaded ${data.length} tags', tag: tag);
       for (final tagData in data) {
         final Map<String, dynamic> jsonMap = tagData as Map<String, dynamic>;
         final tag = Tag.fromJson(jsonMap);
         _tags[tag.id] = tag;
       }
+
+      final String changeLogAssetString = await rootBundle.loadString(
+        '$tagAssetPath/tag_list_change_log.json',
+      );
+      Map<String, dynamic> changeLogData = jsonDecode(changeLogAssetString);
+      _changeLog = TagListChangeLog.fromJson(changeLogData);
     } catch (e) {
       logE('Failed to load tags with error', error: e, tag: tag);
     }
@@ -47,6 +58,7 @@ class TagRepository {
 
   Future<void> _syncWithRemoteData() async {
     final url = '$configBaseUrl/tag.json';
+    final changeLogUrl = '$configBaseUrl/tag_list_change_log.json';
     try {
       Response response = await get(Uri.parse(url)).timeout(_requestTimeOut);
 
@@ -64,6 +76,16 @@ class TagRepository {
       Log.d(
         tag,
         '\n-------------------\nGET $url\nResult: ${response.statusCode} - ${data.map((e) => e['name'])}\n-------------------',
+      );
+
+      Response changeLogResponse = await get(Uri.parse(changeLogUrl))
+          .timeout(_requestTimeOut);
+      Map<String, dynamic> changeLogData = jsonDecode(changeLogResponse.body);
+      _changeLog = TagListChangeLog.fromJson(changeLogData);
+
+      logD(
+        '\n-------------------\nGET $changeLogUrl\nResult: ${changeLogResponse.statusCode} - $changeLogData\n-------------------',
+        tag: tag,
       );
     } catch (e) {
       Log.d(

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
 import '../../constant.dart';
+import '../../domain/entity/artist_list_change_log.dart';
 import '../../domain/entity/post.dart';
 import '../../utils/log.dart';
 
@@ -25,6 +26,10 @@ class ArtistRepository {
   Map<String, Artist> get artists => Map.unmodifiable(_artists);
 
   static const String tag = 'ArtistRepository';
+
+  static ArtistListChangeLog? _changeLog;
+
+  static ArtistListChangeLog? get changeLog => _changeLog;
 
   Future<void> loadArtists() async {
     _artists.clear();
@@ -47,6 +52,12 @@ class ArtistRepository {
           _artists[artist.name] = artist;
         }
       }
+
+      final String changeLogAssetString = await rootBundle.loadString(
+        '$artistAssetPath/artist_list_change_log.json',
+      );
+      Map<String, dynamic> changeLogData = jsonDecode(changeLogAssetString);
+      _changeLog = ArtistListChangeLog.fromJson(changeLogData);
     } catch (e) {
       logE('Failed to load artists with error', error: e, tag: tag);
     }
@@ -55,6 +66,7 @@ class ArtistRepository {
 
   Future<void> _syncWithRemoteData() async {
     final url = '$configBaseUrl/artist.json';
+    final changeLogUrl = '$configBaseUrl/artist_list_change_log.json';
     try {
       Response response = await get(Uri.parse(url)).timeout(_requestTimeOut);
 
@@ -72,6 +84,16 @@ class ArtistRepository {
       }
       logD(
         '\n-------------------\nGET $url\nResult: ${response.statusCode} - ${data.map((e) => e['name'])}\n-------------------',
+        tag: tag,
+      );
+
+      Response changeLogResponse = await get(Uri.parse(changeLogUrl))
+          .timeout(_requestTimeOut);
+      Map<String, dynamic> changeLogData = jsonDecode(changeLogResponse.body);
+      _changeLog = ArtistListChangeLog.fromJson(changeLogData);
+
+      logD(
+        '\n-------------------\nGET $changeLogUrl\nResult: ${changeLogResponse.statusCode} - $changeLogData\n-------------------',
         tag: tag,
       );
     } catch (e) {

@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:animage/constant.dart';
+import 'package:animage/data/repository/artist_repository.dart';
+import 'package:animage/data/repository/tag_repository.dart';
 import 'package:animage/dimension.dart';
 import 'package:animage/domain/entity/gallery_level.dart';
 import 'package:animage/feature/settings/setting_cubit.dart';
@@ -25,6 +27,7 @@ class SettingsPage extends StatelessWidget {
           children: [
             const _GeneralInfoSection(),
             const _ContactInfoSection(),
+            const _ConfigUpdateTime(),
             const _SuggestedTags(),
           ],
         ),
@@ -111,6 +114,41 @@ class _ContactInfoSection extends StatelessWidget {
             },
           ),
         ]),
+      ),
+    );
+  }
+}
+
+class _ConfigUpdateTime extends StatelessWidget {
+  const _ConfigUpdateTime();
+
+  @override
+  Widget build(BuildContext context) {
+    final artistListChangeLog = ArtistRepository.changeLog;
+    final tagListChangeLog = TagRepository.changeLog;
+
+    final children = [
+      if (artistListChangeLog != null)
+        _InfoItem(
+          title: 'Artists',
+          description: 'Updated at: ${artistListChangeLog.updatedAt}',
+        ),
+      if (tagListChangeLog != null)
+        _InfoItem(
+          title: 'Tags',
+          description: 'Updated at: ${tagListChangeLog.updatedAt}',
+        ),
+    ];
+    if (children.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return _Section(
+      title: 'Config data',
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: space1,
+        children: _widgetsWithDividers(children),
       ),
     );
   }
