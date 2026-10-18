@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:animage/domain/entity/artist.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
 
+import '../../constant.dart';
 import '../../domain/entity/post.dart';
 import '../../utils/log.dart';
 
@@ -10,6 +12,8 @@ const String artistAssetPath = 'assets/master_data/artist';
 
 const postsKey = 'posts';
 const artistsKey = 'artists';
+
+const _requestTimeOut = Duration(seconds: 30);
 
 class ArtistRepository {
   ArtistRepository._();
@@ -42,6 +46,33 @@ class ArtistRepository {
       }
     } catch (e) {
       logE('Failed to load artists with error', error: e);
+    }
+    _syncWithRemoteData().ignore();
+  }
+
+  Future<void> _syncWithRemoteData() async {
+    final url = '$configBaseUrl/artist.json';
+    try {
+      Response response = await get(Uri.parse(url)).timeout(_requestTimeOut);
+
+      final List<dynamic> data = jsonDecode(response.body);
+      logD('Synced ${data.length} artists');
+      for (final artistData in data) {
+        try {
+          final Map<String, dynamic> jsonMap =
+              artistData as Map<String, dynamic>;
+          final artist = Artist.fromJson(jsonMap);
+          _artists[artist.name] = artist;
+        } catch (e) {
+          logE('Failed to parse artist data $artistData', error: e);
+        }
+      }
+      logD(
+        '\n-------------------\nGET $url\nResult: ${response.statusCode} - ${data.map((e) => e['name'])}\n-------------------',
+      );
+    } catch (e) {
+      logE('\n-------------------\nGET $url\nError: $e\n-------------------');
+      rethrow;
     }
   }
 

@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-const baseUrlMasterData =
-    'https://raw.githubusercontent.com/duyphuong5126/Animage/refs/heads/main/animage/master_data'; // todo
+const configBaseUrl =
+    'https://raw.githubusercontent.com/Nonoka9002/Animage/refs/heads/main';
 
 const Color brandColor = Color.fromARGB(255, 238, 136, 135);
 const Color brandColorLight = Color.fromARGB(255, 236, 159, 158);

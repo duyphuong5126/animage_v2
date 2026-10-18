@@ -4,12 +4,15 @@ import 'package:animage/constant.dart';
 import 'package:animage/domain/entity/tag.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
 
 import '../../utils/log.dart';
 
 const tagQueryKey = 'tag_query';
 const tagNamesKey = 'tag_names';
 const availableTagsKey = 'available_tags';
+
+const _requestTimeOut = Duration(seconds: 30);
 
 class TagRepository {
   TagRepository._();
@@ -19,6 +22,8 @@ class TagRepository {
   static final Set<Tag> _tags = {};
 
   static Set<Tag> get tags => Set.of(_tags);
+
+  static const String tag = 'TagRepository';
 
   Future<void> loadTags() async {
     _tags.clear();
@@ -36,6 +41,36 @@ class TagRepository {
       }
     } catch (e) {
       logE('Failed to load tags with error', error: e);
+    }
+    _syncWithRemoteData().ignore();
+  }
+
+  Future<void> _syncWithRemoteData() async {
+    final url = '$configBaseUrl/tag.json';
+    try {
+      Response response = await get(Uri.parse(url)).timeout(_requestTimeOut);
+
+      final List<dynamic> data = jsonDecode(response.body);
+      logD('Synced ${data.length} tags');
+      for (final tagData in data) {
+        try {
+          final Map<String, dynamic> jsonMap = tagData as Map<String, dynamic>;
+          final tag = Tag.fromJson(jsonMap);
+          _tags.add(tag);
+        } catch (e) {
+          logE('Failed to parse tag data $tagData', error: e);
+        }
+      }
+      Log.d(
+        tag,
+        '\n-------------------\nGET $url\nResult: ${response.statusCode} - ${data.map((e) => e['name'])}\n-------------------',
+      );
+    } catch (e) {
+      Log.d(
+        tag,
+        '\n-------------------\nGET $url\nError: $e\n-------------------',
+      );
+      rethrow;
     }
   }
 
