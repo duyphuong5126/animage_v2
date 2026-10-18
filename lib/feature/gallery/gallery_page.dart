@@ -224,6 +224,7 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
           listWidget = Padding(
             padding: EdgeInsets.symmetric(horizontal: space1),
             child: CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               controller: _scrollController,
               // BouncingScrollPhysics is critical for iOS overscroll physics
               physics: Platform.isIOS
@@ -322,6 +323,7 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
         } else {
           listWidget = ListView.separated(
             controller: _scrollController,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.symmetric(horizontal: space1),
             itemCount: itemCount + (hasMoreData ? 1 : 0) + 1,
             separatorBuilder: (context, index) {

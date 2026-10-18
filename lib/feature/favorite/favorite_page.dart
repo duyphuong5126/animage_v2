@@ -31,7 +31,7 @@ class FavoritePage extends StatelessWidget {
 
     return BlocProvider(
       create: (context) =>
-          FavoriteCubit()..init(isTablet ? GalleryMode.grid : GalleryMode.list),
+          FavoriteCubit()..init(),
       child: BlocListener<PostAdditionalInfoCubit, PostAdditionalInfo>(
         listenWhen: (prev, current) {
           return prev.favoriteIds != current.favoriteIds;
@@ -135,6 +135,7 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: space1),
             child: CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               controller: _scrollController,
               slivers: [
                 SliverToBoxAdapter(child: SizedBox(height: space8)),
@@ -175,6 +176,7 @@ class _InfinityGalleryState extends State<_InfinityGallery> {
         }
 
         return ListView.separated(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           controller: _scrollController,
           padding: EdgeInsets.symmetric(horizontal: space1),
           itemCount: itemCount + (hasMoreData ? 1 : 0) + 1,

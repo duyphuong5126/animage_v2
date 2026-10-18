@@ -5,6 +5,7 @@ import 'package:animage/feature/favorite/favorite_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../shared/enum/gallery_mode.dart';
+import '../../shared/helper/shared_preferences_helper.dart';
 import '../../utils/log.dart';
 
 class FavoriteCubit extends Cubit<FavoriteState> {
@@ -12,14 +13,19 @@ class FavoriteCubit extends Cubit<FavoriteState> {
 
   final PostLocalDataSource _localDataSource = PostLocalDataSource.instance;
 
-  void init(GalleryMode mode) {
-    if (mode != state.galleryMode) {
-      emit(state.copyWith(galleryMode: mode));
-    }
+  void init() {
     unawaited(_init());
   }
 
   Future<void> _init() async {
+    final mode = await SharedPreferencesHelper.getFavoriteMode();
+    if (mode != null && mode != state.galleryMode) {
+      emit(state.copyWith(galleryMode: mode));
+    }
+    await _resetList();
+  }
+
+  Future<void> _resetList() async {
     final favoriteIds = await _localDataSource.getFavoriteIds();
     emit(state.copyWith(favoriteCount: favoriteIds.length));
     await loadMore();
@@ -57,6 +63,7 @@ class FavoriteCubit extends Cubit<FavoriteState> {
   }
 
   void changeMode(GalleryMode mode) {
+    unawaited(SharedPreferencesHelper.setFavoriteModeValue(mode));
     emit(state.copyWith(galleryMode: mode));
   }
 
@@ -70,6 +77,6 @@ class FavoriteCubit extends Cubit<FavoriteState> {
         error: null,
       ),
     );
-    unawaited(_init());
+    unawaited(_resetList());
   }
 }
