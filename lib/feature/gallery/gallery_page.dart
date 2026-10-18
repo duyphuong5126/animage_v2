@@ -444,26 +444,29 @@ class _SearchViewState extends State<_SearchView> {
       child: SizedBox(
         height: space6, // = 48.0
         child: Platform.isIOS
-            ? CupertinoTextField(
-                controller: _editingController,
-                style: textStyle,
-                textAlignVertical: TextAlignVertical.center,
-                onSubmitted: onSubmitted,
-                textInputAction: TextInputAction.search,
-                placeholder: 'Search',
-                placeholderStyle: textStyle.copyWith(color: grey117),
-                padding: EdgeInsets.symmetric(
-                  horizontal:
-                      space2, // = 16.0 (khoảng cách lề trái phải rất đẹp)
-                  vertical: spaceOneHalf,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? white : grey217,
-                  border: Border.fromBorderSide(BorderSide.none),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(
-                      Platform.isIOS ? iosTextFieldRadius : space1,
-                    ), // space1 = 8.0
+            ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: space1),
+                child: CupertinoTextField(
+                  controller: _editingController,
+                  clearButtonMode: OverlayVisibilityMode.editing,
+                  style: textStyle,
+                  textAlignVertical: TextAlignVertical.center,
+                  onSubmitted: onSubmitted,
+                  textInputAction: TextInputAction.search,
+                  placeholder: 'Search',
+                  placeholderStyle: textStyle.copyWith(color: grey117),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: space2,
+                    vertical: spaceOneHalf,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? white : grey217,
+                    border: Border.fromBorderSide(BorderSide.none),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(
+                        Platform.isIOS ? iosTextFieldRadius : space1,
+                      ), // space1 = 8.0
+                    ),
                   ),
                 ),
               )
@@ -496,6 +499,20 @@ class _SearchViewState extends State<_SearchView> {
                       ), // space1 = 8.0
                     ),
                     borderSide: BorderSide.none,
+                  ),
+
+                  suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _editingController,
+                    builder: (context, value, child) {
+                      return value.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.clear),
+                              onPressed: () {
+                                _editingController.clear();
+                              },
+                            )
+                          : const SizedBox.shrink();
+                    },
                   ),
                 ),
               ),
